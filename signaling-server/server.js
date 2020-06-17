@@ -80,7 +80,7 @@ io.on("connection", function (socket) {
         // Handle RTC signaling transparently. Just pass on the message to the other clients
         socket.on("signal", data => {
           console.log("received signaling message from socket " + socket.id);
-          console.log(data);
+          // console.log(data);
           console.log(`propagating signaling message to room: ${room}`);
           socket.to(room).emit("signal", data);
         });

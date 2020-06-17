@@ -18,13 +18,13 @@
       <q-input v-model="chatMessage" standout label="say something" @keyup.enter="sendMessage" />
       <label>
         Video In
-        <select v-model="chosenVideoInputId" name="videoInput">
+        <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
           <option v-for="deviceObject in videoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
       </label>
       <label>
         Audio In
-        <select v-model="chosenAudioInputId" name="audioInput">
+        <select v-model="chosenAudioInputId" name="audioInput" @change="mediaDeviceChanged">
           <option v-for="deviceObject in audioInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
       </label>
@@ -68,7 +68,7 @@ export default {
       mediaDevices: [],
       chosenVideoInputId: null,
       chosenAudioInputId: null,
-      connectionName: 'test-connection',
+      roomName: 'test-connection',
       chatMessage: '',
       receivedMessages: [],
     };
@@ -98,7 +98,7 @@ export default {
     },
   },
   async mounted () {
-    this.$socket.client.emit('join', this.connectionName);
+    this.$socket.client.emit('join', this.roomName);
     const devices = await navigator.mediaDevices.enumerateDevices();
     this.mediaDevices = devices;
     this.chosenVideoInputId = this.videoInputDevices[0].deviceId;
@@ -121,15 +121,8 @@ export default {
   methods: {
     async requestVideo () {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        this.$refs.localVideo.srcObject = stream;
-
-        this.localStream = stream;
-
-        console.log(this.$refs.localVideo);
-
         console.log(peerConnection);
-
+        this.localStream = await this.getLocalMediaStream();
         if (peerConnection) {
           console.log('adding stream dynamically');
           peerConnection.addStream(this.localStream);
@@ -137,6 +130,40 @@ export default {
       } catch (err) {
         console.error(err);
       }
+    },
+    async getLocalMediaStream () {
+      try {
+        const videoConstraint = this.chosenVideoInputId ? { deviceId: this.chosenVideoInputId } : true;
+        const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : true;
+        const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraint, audio: audioConstraint });
+        console.log(stream);
+        this.$refs.localVideo.srcObject = stream;
+        // this.localStream = stream;
+        return stream;
+      } catch (err) {
+        this.$q.notify({
+          message: 'Lyckades inte starta video/audio-enheten. So saad...',
+          position: 'center',
+          actions: [
+            { label: 'Ok', color: 'white', handler: () => { /* ... */ } },
+          ],
+          color: 'negative',
+          icon: 'report_problem',
+        });
+        console.error(err);
+      }
+    },
+    async mediaDeviceChanged () {
+      const stream = await this.getLocalMediaStream();
+      if (!stream) { return; }
+      if (peerConnection) {
+        console.log('removing previous stream');
+        if (this.localStream) {
+          peerConnection.removeStream(this.localStream);
+        }
+        peerConnection.addStream(stream);
+      }
+      this.localStream = stream;
     },
     sendMessage () {
       console.log('sending message');
