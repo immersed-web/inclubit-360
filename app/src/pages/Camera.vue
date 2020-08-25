@@ -11,6 +11,8 @@
       autoplay
     />
 
+    <canvas ref="drawCanvas" />
+
     <p v-for="(item, index) in lastTenMsg" :key="index">
       {{ item }}
     </p>
@@ -54,7 +56,7 @@
 
 <script lang="ts">
 
-const Peer = require('simple-peer');
+import sceneUtils from 'js/scene-utils';
 
 let channel = null;
 let peerConnection = null;
@@ -164,6 +166,8 @@ export default {
         peerConnection.addStream(stream);
       }
       this.localStream = stream;
+      sceneUtils.initThreeScene(this.$refs.drawCanvas);
+      sceneUtils.addSphereToScene(sceneUtils.videoToSphereMesh(this.$refs.localVideo));
     },
     sendMessage () {
       console.log('sending message');
