@@ -15,9 +15,11 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "axios": "^0.18.1",
+    "camera-controls": "^1.22.1",
     "quasar": "^1.0.0",
     "simple-peer": "^9.7.2",
     "socket.io-client": "^2.3.0",
+    "three": "^0.119.1",
     "vue-socket.io-extended": "^4.0.3"
   },
   "devDependencies": {

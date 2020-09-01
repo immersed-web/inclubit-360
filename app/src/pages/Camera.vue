@@ -21,13 +21,13 @@
       <label>
         Video In
         <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
-          <option v-for="deviceObject in videoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
+          <option v-for="deviceObject in availableVideoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
       </label>
       <label>
         Audio In
         <select v-model="chosenAudioInputId" name="audioInput" @change="mediaDeviceChanged">
-          <option v-for="deviceObject in audioInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
+          <option v-for="deviceObject in availableAudioInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
       </label>
       <q-btn
@@ -57,7 +57,9 @@
 <script lang="ts">
 
 import sceneUtils from 'js/scene-utils';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 
+const Peer = require('simple-peer');
 let channel = null;
 let peerConnection = null;
 
@@ -76,21 +78,25 @@ export default {
     };
   },
   computed: {
-    videoInputDevices () {
-      return this.mediaDevices.filter(device => device.kind === 'videoinput');
-    },
-    chosenVideoInput () {
-      return this.videoInputDevices.find(element => element.deviceId === this.chosenVideoInputId);
-    },
-    audioInputDevices () {
-      return this.mediaDevices.filter(device => device.kind === 'audioinput');
-    },
-    chosenAudioInput () {
-      return this.audioInputDevices.find(element => element.deviceId === this.chosenAudioInputId);
-    },
-    audioOutputDevices () {
-      return this.mediaDevices.filter(device => device.kind === 'audiooutput');
-    },
+    ...mapState(['availableMediaDevices', 'activeVideoDeviceId',
+      'activeAudioInputDeviceId',
+      'activeAudioOutputDeviceId']),
+    ...mapGetters(['availableVideoInputDevices', 'availableAudioInputDevices', 'availableAudioOutputDevices']),
+    // videoInputDevices () {
+    //   return this.mediaDevices.filter(device => device.kind === 'videoinput');
+    // },
+    // chosenVideoInput () {
+    //   return this.videoInputDevices.find(element => element.deviceId === this.chosenVideoInputId);
+    // },
+    // audioInputDevices () {
+    //   return this.mediaDevices.filter(device => device.kind === 'audioinput');
+    // },
+    // chosenAudioInput () {
+    //   return this.audioInputDevices.find(element => element.deviceId === this.chosenAudioInputId);
+    // },
+    // audioOutputDevices () {
+    //   return this.mediaDevices.filter(device => device.kind === 'audiooutput');
+    // },
     lastTenMsg () {
       if (this.receivedMessages.length >= 10) {
         return this.receivedMessages.slice(this.receivedMessages.length - 10, this.receivedMessages.length);
@@ -102,10 +108,14 @@ export default {
   async mounted () {
     this.$socket.client.emit('join', this.roomName);
     const devices = await navigator.mediaDevices.enumerateDevices();
-    this.mediaDevices = devices;
-    this.chosenVideoInputId = this.videoInputDevices[0].deviceId;
+    console.log(devices);
+    this.setAvailableMediaDevices(devices);
+    this.initializeActiveMediaDevices();
 
-    this.chosenAudioInputId = this.audioInputDevices[0].deviceId;
+    // this.mediaDevices = devices;
+    // this.chosenVideoInputId = this.videoInputDevices[0].deviceId;
+
+    // this.chosenAudioInputId = this.audioInputDevices[0].deviceId;
     // console.log(devices);
   },
   sockets: {
@@ -121,6 +131,8 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(['setAvailableMediaDevices']),
+    ...mapActions(['initializeActiveMediaDevices']),
     async requestVideo () {
       try {
         console.log(peerConnection);

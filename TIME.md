@@ -4,8 +4,11 @@ Time journal:
 2020-06-10  8h
 2020-06-11  8h
 2020-06-12  8h
+2020-07-03  8h
+2020-08-27  8h
 
-summa: 24h
+
+Summa: 24h
 
 | Aktivitet                                                     | Uppskattning tid|
 | ---                                                           | ---:            | 
