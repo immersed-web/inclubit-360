@@ -2,6 +2,10 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 import deviceSettings from './deviceSettings';
+import connectionSettings from './connectionSettings';
+
+// Use a new variable and export values to change default behaviour.
+let store = null;
 
 Vue.use(Vuex);
 
@@ -18,6 +22,7 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       deviceSettings,
+      connectionSettings,
     },
 
     // enable strict mode (adds overhead!)
@@ -25,5 +30,11 @@ export default function (/* { ssrContext } */) {
     strict: process.env.DEV,
   });
 
+  // add this so that we export store
+  store = Store;
+
   return Store;
 }
+
+// add this line to access store wherever you need
+export { store };

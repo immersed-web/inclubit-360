@@ -1,19 +1,19 @@
 <template>
   <q-page>
-    <OverlayTitle text="CAMERA" />
     <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" />
+    <OverlayTitle text="VIEWER" />
+    <!-- <video
+      ref="localVideo"
+      class="local-video"
+      autoplay
+    /> -->
     <video
       ref="remoteVideo"
-      :class="{'main-video': !localVideoIsBig, 'thumbnail-video': localVideoIsBig, }"
+      class="thumbnail-video"
       autoplay
-      @click="localVideoIsBig = localVideoIsBig? !localVideoIsBig:localVideoIsBig"
     />
-    <video
-      ref="localVideo"
-      :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
-      autoplay
-      @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
-    />
+
+    <canvas ref="drawCanvas" class="main-video" />
     <p id="chat-message">
       {{ inChatMessage }}
     </p>
@@ -23,27 +23,24 @@
 <script>
 
 import { mapState } from 'vuex';
-
 import peerUtil from 'js/peer-utils';
+import sceneUtils from 'js/scene-utils';
 import OverlayTitle from 'src/components/OverlayTitle';
-
 export default {
-  name: 'Camera',
+  name: 'Viewer',
   components: {
     OverlayTitle,
   },
   data () {
     return {
-      localVideoIsBig: false,
-      localStream: null,
-      inChatMessage: 'message',
+      remoteStream: null,
       outChatMessage: '',
+      inChatMessage: '',
     };
   },
   computed: {
     ...mapState({
       roomName: state => state.connectionSettings.roomName,
-      availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
     }),
   },
   sockets: {
@@ -58,36 +55,34 @@ export default {
       peerUtil.signalPeer(data);
     },
   },
-  async mounted () {
+  mounted () {
     this.$socket.client.emit('join', this.roomName);
-    peerUtil.populateAvailableMediaDevices();
-    this.localStream = await peerUtil.getLocalMediaStream(true, false);
-    this.$refs.localVideo.srcObject = this.localStream;
-    peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.localStream);
-  },
-  beforeDestroy () {
-    peerUtil.destroyPeer();
+    peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage);
+    // sceneUtils.initThreeScene(this.$refs.drawCanvas);
   },
   methods: {
-    async start () {
-      console.log('start was called');
+    onSignal (d) {
+      console.log('signal triggered from peer obj:', d);
+      this.$socket.client.emit('signal', d);
     },
     onStream (stream) {
-      this.$refs.remoteVideo.srcObject = stream;
+      console.log('received remote stream!!!', stream);
+      this.remoteStream = stream;
+      this.$refs.remoteVideo.srcObject = this.remoteStream;
+      // sceneUtils.addSphereToScene(sceneUtils.videoToSphereMesh(this.$refs.localVideo));
     },
     onMessage (data) {
-      console.log('received message', data);
       this.inChatMessage = data;
     },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
     },
   },
+
 };
 </script>
 
 <style lang="scss">
-
 #chat-message {
   position: fixed;
   z-index: 60;
@@ -98,5 +93,4 @@ export default {
   text-align: center;
   margin: 0;
 }
-
 </style>
