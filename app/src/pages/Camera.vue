@@ -81,12 +81,37 @@ export default {
     },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
+      this.outChatMessage = '';
     },
   },
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+.thumbnail-video {
+  background-color: white;
+  width: 20vw;
+  position: fixed;
+  left: 3rem;
+  top: 3rem;
+  z-index: 50;
+  border-radius: 1rem;
+  cursor: pointer;
+  box-shadow:
+  0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+  0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+  0 12.5px 10px rgba(0, 0, 0, 0.06)
+}
+
+.main-video {
+  background-color: grey;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
 
 #chat-message {
   position: fixed;
