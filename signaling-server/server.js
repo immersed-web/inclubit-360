@@ -57,6 +57,10 @@ io.on("connection", function (socket) {
   })();
 
   socket.on("join", data => {
+    if(!data){
+      console.log('invalid room provided', data);
+      return;
+    }
     console.log(`socket ${socket.id} wants to join room ${data}`);
 
     socket.join(data)
