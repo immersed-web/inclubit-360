@@ -1,0 +1,9 @@
+{env.BACKEND_SERVER} {
+  reverse_proxy /socket.io/* signaling:3000 
+  reverse_proxy web:8080
+  file_server {
+    root /srv
+  }
+  
+  log
+}
