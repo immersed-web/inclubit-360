@@ -8,12 +8,15 @@
   "author": "Gunnar Oledal <gunnar.oledal@gmail.com>",
   "private": true,
   "scripts": {
+    "build": "quasar build",
+    "start": "quasar dev",
     "dev": "quasar dev",
     "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "aframe": "^1.0.4",
     "axios": "^0.18.1",
     "camera-controls": "^1.22.1",
     "quasar": "^1.0.0",

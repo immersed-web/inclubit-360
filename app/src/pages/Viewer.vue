@@ -15,7 +15,17 @@
       @play="remoteVideoStarted"
     />
 
-    <canvas ref="drawCanvas" class="main-video" />
+    <a-scene>
+      <a-plane
+        position="0 0 -4"
+        rotation="-90 0 0"
+        width="4"
+        height="4"
+        color="#7BC8A4"
+      />
+    </a-scene>
+
+    <!-- <canvas id="draw-canvas" ref="drawCanvas" class="main-video" /> -->
     <p id="chat-message">
       {{ inChatMessage }}
     </p>
@@ -90,7 +100,9 @@ export default {
         this.$refs.remoteVideo.muted = true;
         await this.$refs.remoteVideo.play();
       }
-      sceneUtils.addSphereToScene(sceneUtils.videoToSphereMesh(this.$refs.remoteVideo));
+
+      this.initVideoSphere(stream, this.$refs.remoteVideo);
+      // sceneUtils.addSphereToScene(sceneUtils.videoToSphereMesh(this.$refs.remoteVideo));
     },
     onMessage (data) {
       this.inChatMessage = data;
@@ -101,6 +113,13 @@ export default {
     },
     remoteVideoStarted () {
       console.log('remotevideo started!');
+    },
+    initVideoSphere (stream, videoElement) {
+      const sceneEl = document.querySelector('a-scene');
+      const vSphere = document.createElement('a-videosphere');
+      // vSphere.setAttribute('srcObject', 'https://bitmovin.com/player-content/playhouse-vr/progressive.mp4');
+      vSphere.setAttribute('src', '#remote-video');
+      sceneEl.appendChild(vSphere);
     },
   },
 

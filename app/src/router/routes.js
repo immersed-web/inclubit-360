@@ -8,6 +8,7 @@ const routes = [
       { path: 'camera', component: () => import('pages/Camera.vue') },
       { path: 'watch', component: () => import('pages/Viewer.vue') },
       { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
+      { path: 'aframe', component: () => import('pages/AframeTest.vue') },
     ],
   },
 ];

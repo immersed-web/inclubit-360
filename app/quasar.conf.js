@@ -29,6 +29,7 @@ module.exports = function (/* ctx */) {
         server: false,
       },
       'axios',
+      'vue-config',
       // 'simple-peer'
     ],
 
