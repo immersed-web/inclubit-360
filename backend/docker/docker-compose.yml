@@ -10,8 +10,11 @@ services:
       # passing through from env
       - BACKEND_SERVER_PROTOCOL
       - BACKEND_SERVER
+      - TURN_UDP_PORT
+      - TURN_TLS_PORT
+      - TURN_USER
+      - TURN_PASSWORD
     depends_on:
-      - "web"
       - "signaling"
     volumes:
       - ~/docker-persistence/caddy:/data
@@ -26,17 +29,17 @@ services:
     #   - "3000:3000"
     expose:
       - "3000"
-  web:
-    environment:
-      # passing through from env
-      - BACKEND_SERVER_PROTOCOL
-      - BACKEND_SERVER
-      - TURN_UDP_PORT
-      - TURN_TLS_PORT
-      - TURN_USER
-      - TURN_PASSWORD
-    build: ../../app
-    expose:
-      - "8080"
+  # web:
+  #   environment:
+  #     # passing through from env
+  #     - BACKEND_SERVER_PROTOCOL
+  #     - BACKEND_SERVER
+  #     - TURN_UDP_PORT
+  #     - TURN_TLS_PORT
+  #     - TURN_USER
+  #     - TURN_PASSWORD
+  #   build: ../../app
+  #   expose:
+  #     - "8080"
 
 # vim:set et ts=2 sw=2:
