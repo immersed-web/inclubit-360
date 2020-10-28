@@ -8,6 +8,7 @@
       autoplay
     /> -->
     <video
+      id="remote-video"
       ref="remoteVideo"
       class="thumbnail-video"
       autoplay
@@ -22,10 +23,9 @@
 </template>
 
 <script>
-
 import { mapState } from 'vuex';
 import peerUtil from 'js/peer-utils';
-import sceneUtils from 'js/scene-utils';
+// import sceneUtils from 'js/scene-utils';
 import OverlayTitle from 'src/components/OverlayTitle';
 export default {
   name: 'Viewer',
@@ -59,7 +59,8 @@ export default {
   mounted () {
     this.$socket.client.emit('join', this.roomName);
     peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage);
-    sceneUtils.initThreeScene(this.$refs.drawCanvas);
+    // sceneUtils.initThreeScene(this.$refs.drawCanvas);
+    // console.log('videoSphereSource is:', this.$refs.videoSphereSource);
   },
   methods: {
     onSignal (d) {
@@ -69,7 +70,19 @@ export default {
     async onStream (stream) {
       console.log('received remote stream!!!', stream);
       this.remoteStream = stream;
+
+      const videoTrack = this.remoteStream.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+      console.log('capabilities: ', capabilities);
+      console.log('settings', videoTrack.getSettings());
+
       this.$refs.remoteVideo.srcObject = this.remoteStream;
+      // this.$refs.videoSphereSource.srcObject = this.remoteStream;
+      // document.querySelector('#vr-video').srcObject = this.remoteStream;
+      // document.querySelector('#vr-video').components.material.material.map.image.play();
+
+      // document.querySelector("#antarctica").components.material.material.map.image.play();
+      // this.$refs.videoSphereSource.components.material.material.map.image.play();
       try {
         await this.$refs.remoteVideo.play();
       } catch (err) {
@@ -95,6 +108,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#draw-canvas {
+  // z-index: -1;
+  display: block;
+  width: 30vw;
+  height: 30vh;
+  top: auto;
+  left: auto;
+  right: 2vw;
+  bottom: 2vh;
+}
+
 .thumbnail-video {
   background-color: white;
   width: 20vw;

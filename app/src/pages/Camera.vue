@@ -1,28 +1,36 @@
 <template>
   <q-page>
-    <OverlayTitle text="CAMERA" />
-    <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" />
     <video
       ref="remoteVideo"
       :class="{'main-video': !localVideoIsBig, 'thumbnail-video': localVideoIsBig, }"
       autoplay
       @click="localVideoIsBig = localVideoIsBig? !localVideoIsBig:localVideoIsBig"
     />
-    <video
-      ref="localVideo"
-      :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
-      autoplay
-      @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
-    />
-    <p id="chat-message">
-      {{ inChatMessage }}
-    </p>
+    <div id="overlay-container">
+      <OverlayTitle text="CAMERA" />
+      <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" />
+      <video
+        ref="localVideo"
+        :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
+        autoplay
+        @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
+      />
+      <label>
+        Video In
+        <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
+          <option v-for="deviceObject in availableVideoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
+        </select>
+      </label>
+      <p id="chat-message">
+        {{ inChatMessage }}
+      </p>
+    </div>
   </q-page>
 </template>
 
 <script>
 
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 
 import peerUtil from 'js/peer-utils';
 import OverlayTitle from 'src/components/OverlayTitle';
@@ -38,13 +46,20 @@ export default {
       localStream: null,
       inChatMessage: 'message',
       outChatMessage: '',
+      chosenVideoInputId: null,
+      chosenAudioInputId: null,
     };
   },
   computed: {
     ...mapState({
       roomName: state => state.connectionSettings.roomName,
       availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
+      // availableVideoInputDevices: state => state.deviceSettings.availableVideoInputDevices,
     }),
+    ...mapGetters(['availableVideoInputDevices']),
+    // availableVideoInputDevices () {
+    //   return this.availableMediaDevices.filter(device => device.kind === 'videoinput');
+    // },
   },
   sockets: {
     connect (data) {
@@ -60,10 +75,17 @@ export default {
   },
   async mounted () {
     this.$socket.client.emit('join', this.roomName);
-    peerUtil.populateAvailableMediaDevices();
-    this.localStream = await peerUtil.getLocalMediaStream(true, false);
-    this.$refs.localVideo.srcObject = this.localStream;
+    try {
+      await peerUtil.populateAvailableMediaDevices();
+      this.localStream = await peerUtil.getLocalMediaStream(true, false);
+      this.$refs.localVideo.srcObject = this.localStream;
+    } catch (e) {
+      console.error(e);
+    }
+    console.log('creating peer with streamobject: ', this.localStream);
     peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.localStream);
+
+    // console.log(this.availableMediaDevices);
   },
   beforeDestroy () {
     peerUtil.destroyPeer();
@@ -83,18 +105,50 @@ export default {
       peerUtil.sendMessage(this.outChatMessage);
       this.outChatMessage = '';
     },
+    async mediaDeviceChanged () {
+      const videoId = this.chosenVideoInputId;
+      const videoConstraint = videoId ? { deviceId: videoId } : true;
+      videoConstraint.frameRate = 5;
+      videoConstraint.width = 3840;
+      videoConstraint.height = 1920;
+      const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : false;
+      this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
+      const videoTrack = this.localStream.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+      console.log('capabilities: ', capabilities);
+      console.log('settings', videoTrack.getSettings());
+      this.$refs.localVideo.srcObject = this.localStream;
+      peerUtil.setPeerOutputStream(this.localStream);
+    },
+    switchVideoThumbnailVideo () {
+      // TODO: Implement that srcobject switch place between videtags instread of switch css class!
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
+#overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 30, 255, 0.2);
+  z-index: 100;
+  pointer-events: none;
+  * {
+    pointer-events: auto;
+  }
+}
+
 .thumbnail-video {
   background-color: white;
   width: 20vw;
   position: fixed;
   left: 3rem;
   top: 3rem;
-  z-index: 50;
+  z-index: -1;
   border-radius: 1rem;
   cursor: pointer;
   box-shadow:
@@ -103,19 +157,9 @@ export default {
   0 12.5px 10px rgba(0, 0, 0, 0.06)
 }
 
-.main-video {
-  background-color: grey;
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-}
-
 #chat-message {
   position: fixed;
-  z-index: 60;
+  // z-index: 60;
   bottom: 5vh;
   font-size: 2.5rem;
   color: white;

@@ -46,7 +46,7 @@ let controls;
 let scene;
 let width;
 let height;
-const defaultFov = 50;
+const defaultFov = 90;
 const defaultCameraDistance = 0.0001; // 5;
 // let aspect = 1.78; //default to 16:9
 let camera;
@@ -72,15 +72,15 @@ export function initThreeScene (drawCanvas) {
   // let mesh = new THREE.Mesh(demoGeometry, demoMaterial);
   // scene.add(mesh);
 
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }),
-  );
-  scene.add(mesh);
+  // const mesh = new THREE.Mesh(
+  //   new THREE.BoxGeometry(1, 1, 1),
+  //   new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }),
+  // );
+  // scene.add(mesh);
 
-  const gridHelper = new THREE.GridHelper(50, 50);
-  gridHelper.position.y = -1;
-  scene.add(gridHelper);
+  // const gridHelper = new THREE.GridHelper(50, 50);
+  // gridHelper.position.y = -1;
+  // scene.add(gridHelper);
 
   renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -194,16 +194,15 @@ export function setFov (fov) {
 function resizeScene (drawCanvas) {
   console.log('resizing render canvas');
   console.log(drawCanvas);
+  const width = drawCanvas.clientWidth;
+  const height = drawCanvas.clientHeight;
   // console.log(this.renderer.getPixelRatio());
-  camera.aspect = drawCanvas.width / drawCanvas.height;
-  // camera.aspect = window.innerWidth / window.innerHeight;
-  // camera.aspect = 1.78; //16:9
-  camera.updateProjectionMatrix();
-  renderer.setSize(
-    drawCanvas.width,
-    drawCanvas.width / camera.aspect,
-    true,
-  );
+  if (drawCanvas.width !== width || drawCanvas.height !== height) {
+    // you must pass false here or three.js sadly fights the browser
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
 }
 
 export function fullscreen (drawCanvas) {

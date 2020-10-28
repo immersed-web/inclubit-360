@@ -1,3 +1,12 @@
 // app global css in SCSS form
 
 
+.main-video {
+  background-color: grey;
+  position: fixed;
+  left: 2vw;
+  top: 2vh;
+  width: 96vw;
+  height: 96vh;
+  // z-index: -1;
+}

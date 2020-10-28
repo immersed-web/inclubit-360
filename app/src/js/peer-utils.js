@@ -10,23 +10,22 @@ MediaDevices.ondevicechange = () => {
   populateAvailableMediaDevices();
 };
 
-export async function populateAvailableMediaDevices () {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  store.commit('setAvailableMediaDevices', devices);
-  // console.log(store);
-}
-
 export async function createPeer (initiator, onSignal, onStream, onMessage, stream) {
   destroyPeer();
-  const config = {
+  const peerOpts = {
     initiator: initiator,
+    config: {
+      iceServers: [
+        { urls: 'stun:drive.robbit.se:3478' },
+        { urls: 'turn:drive.robbit.se:3478', username: 'rise-robbit-turn-user', credential: 'i-want-to-be-there' }],
+    },
     // channelName: 'chat',
     // channelConfig: { negotiated: true, id: 0 },
   };
   if (stream) {
-    config.stream = stream;
+    peerOpts.stream = stream;
   }
-  peerConnection = new Peer(config);
+  peerConnection = new Peer(peerOpts);
   channel = peerConnection._pc.createDataChannel('chat', { negotiated: true, id: 1001 });
   channel.onmessage = (event) => {
     console.log('chatMessage', event.data);
@@ -98,7 +97,25 @@ export function sendMessage (chatMessage) {
   }
 }
 
+export function setPeerOutputStream (stream) {
+  if (!stream) { return; }
+  if (peerConnection) {
+    if (peerConnection.streams.length && peerConnection.streams[0]) {
+      console.log('removing previous stream');
+      peerConnection.removeStream(peerConnection.streams[0]);
+    }
+    peerConnection.addStream(stream);
+  }
+}
+
+export async function populateAvailableMediaDevices () {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  store.commit('setAvailableMediaDevices', devices);
+  // console.log(store);
+}
+
 export async function getLocalMediaStream (videoConstraint, audioConstraint) {
+  console.log('supported constraints: ', navigator.mediaDevices.getSupportedConstraints());
   return await navigator.mediaDevices.getUserMedia({ video: videoConstraint, audio: audioConstraint });
   // try {
   //   // const videoConstraint = this.chosenVideoInputId ? { deviceId: this.chosenVideoInputId } : true;
@@ -122,17 +139,6 @@ export async function getLocalMediaStream (videoConstraint, audioConstraint) {
   // }
 }
 
-export function setPeerStream (stream) {
-  if (!stream) { return; }
-  if (peerConnection) {
-    if (peerConnection.streams.length && peerConnection.streams[0]) {
-      console.log('removing previous stream');
-      peerConnection.removeStream(peerConnection.streams[0]);
-    }
-    peerConnection.addStream(stream);
-  }
-}
-
 export default {
   populateAvailableMediaDevices,
   createPeer,
@@ -140,5 +146,5 @@ export default {
   signalPeer,
   sendMessage,
   getLocalMediaStream,
-  setPeerStream,
+  setPeerOutputStream,
 };
