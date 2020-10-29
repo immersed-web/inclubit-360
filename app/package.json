@@ -1,5 +1,5 @@
 {
-  "name": "fdlis",
+  "name": "inclubit-360",
   "version": "0.0.1",
   "description": "360 streaming for school environments",
   "productName": "Quasar App",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",
+    "@quasar/quasar-app-extension-dotenv": "^1.0.5",
     "babel-eslint": "^10.0.1",
     "devtron": "^1.4.0",
     "electron": "^9.0.2",
