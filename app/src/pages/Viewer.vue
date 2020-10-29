@@ -81,7 +81,7 @@ export default {
       console.log('received remote stream!!!', stream);
       this.remoteStream = stream;
 
-      const videoTrack = this.remoteStream.getVideoTracks()[0];
+      // const videoTrack = this.remoteStream.getVideoTracks()[0];
       // const capabilities = videoTrack.getCapabilities();
       // console.log('capabilities: ', capabilities);
       // console.log('settings', videoTrack.getSettings());
