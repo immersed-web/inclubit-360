@@ -7,6 +7,7 @@
       class="local-video"
       autoplay
     /> -->
+    <pre class="debug-info">{{ debugData }} </pre>
     <video
       id="remote-video"
       ref="remoteVideo"
@@ -16,13 +17,13 @@
     />
 
     <a-scene>
-      <a-plane
+      <!-- <a-plane
         position="0 0 -4"
         rotation="-90 0 0"
         width="4"
         height="4"
         color="#7BC8A4"
-      />
+      /> -->
     </a-scene>
 
     <!-- <canvas id="draw-canvas" ref="drawCanvas" class="main-video" /> -->
@@ -47,6 +48,10 @@ export default {
       remoteStream: null,
       outChatMessage: '',
       inChatMessage: '',
+      debugData: {
+        videoWidth: '',
+        videoHeight: '',
+      },
     };
   },
   computed: {
@@ -116,10 +121,20 @@ export default {
     },
     initVideoSphere (stream, videoElement) {
       const sceneEl = document.querySelector('a-scene');
+      // TODO: Check whether we need to remove and insert new sphere, or if it's enough to update src of existing one.
+      const prevVSphere = sceneEl.querySelector('a-videosphere');
+      if (prevVSphere) {
+        prevVSphere.remove();
+      }
       const vSphere = document.createElement('a-videosphere');
       // vSphere.setAttribute('srcObject', 'https://bitmovin.com/player-content/playhouse-vr/progressive.mp4');
       vSphere.setAttribute('src', '#remote-video');
       sceneEl.appendChild(vSphere);
+
+      // update dimensions info
+      const remoteVideo = document.querySelector('#remote-video');
+      this.debugData.videoWidth = remoteVideo.videoWidth;
+      this.debugData.videoHeight = remoteVideo.videoHeight;
     },
   },
 
@@ -136,6 +151,13 @@ export default {
   left: auto;
   right: 2vw;
   bottom: 2vh;
+}
+
+.debug-info {
+  z-index: 3000;
+  position: fixed;
+  left: 3rem;
+  bottom: 3rem;
 }
 
 .thumbnail-video {

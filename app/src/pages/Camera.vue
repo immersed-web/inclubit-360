@@ -108,7 +108,7 @@ export default {
     async mediaDeviceChanged () {
       const videoId = this.chosenVideoInputId;
       const videoConstraint = videoId ? { deviceId: videoId } : true;
-      videoConstraint.frameRate = 5;
+      // videoConstraint.frameRate = 15;
       videoConstraint.width = 3840;
       videoConstraint.height = 1920;
       const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : false;
