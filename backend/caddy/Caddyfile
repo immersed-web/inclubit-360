@@ -1,5 +1,6 @@
 {env.BACKEND_SERVER} {
-  reverse_proxy /socket.io/* signaling:3000 
+  reverse_proxy /socket.io/* signaling:3000
+  try_files {path} /index.html
   file_server {
     root /srv
   }
