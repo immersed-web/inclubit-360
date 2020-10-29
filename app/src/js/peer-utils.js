@@ -17,9 +17,10 @@ export async function createPeer (initiator, onSignal, onStream, onMessage, stre
     config: {
       iceServers: [
         // { urls: 'stun:drive.robbit.se:3478' },
-        // { urls: 'turn:drive.robbit.se:3478', username: 'rise-robbit-turn-user', credential: 'i-want-to-be-there' }],
-        { "urls": `stun:${process.env.BACKEND_SERVER}:${process.env.TURN_UDP_PORT}` },
-        { "urls": `turn:${process.env.BACKEND_SERVER}:${process.env.TURN_UDP_PORT}`, "username": process.env.TURN_USER, "credential": process.env.TURN_PASSWORD }]
+        // { urls: 'turn:drive.robbit.se:3478', username: 'rise-robbit-turn-user', credential: 'i-want-to-be-there' },
+        { urls: `stun:${process.env.BACKEND_SERVER}:${process.env.TURN_UDP_PORT}` },
+        { urls: `turn:${process.env.BACKEND_SERVER}:${process.env.TURN_UDP_PORT}`, username: process.env.TURN_USER, credential: process.env.TURN_PASSWORD }
+      ],
     },
     // channelName: 'chat',
     // channelConfig: { negotiated: true, id: 0 },
