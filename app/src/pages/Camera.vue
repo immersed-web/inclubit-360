@@ -113,10 +113,12 @@ export default {
       videoConstraint.height = 1920;
       const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : false;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
-      const videoTrack = this.localStream.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities();
-      console.log('capabilities: ', capabilities);
-      console.log('settings', videoTrack.getSettings());
+
+      // const videoTrack = this.localStream.getVideoTracks()[0];
+      // const capabilities = videoTrack.getCapabilities();
+      // console.log('capabilities: ', capabilities);
+      // console.log('settings', videoTrack.getSettings());
+
       this.$refs.localVideo.srcObject = this.localStream;
       peerUtil.setPeerOutputStream(this.localStream);
     },

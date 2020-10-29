@@ -84,7 +84,7 @@ export default {
       const videoTrack = this.remoteStream.getVideoTracks()[0];
       // const capabilities = videoTrack.getCapabilities();
       // console.log('capabilities: ', capabilities);
-      console.log('settings', videoTrack.getSettings());
+      // console.log('settings', videoTrack.getSettings());
 
       this.$refs.remoteVideo.srcObject = this.remoteStream;
       // this.$refs.videoSphereSource.srcObject = this.remoteStream;
