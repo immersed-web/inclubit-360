@@ -12,6 +12,7 @@
       <video
         ref="localVideo"
         :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
+        muted
         autoplay
         @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
       />
@@ -77,7 +78,7 @@ export default {
     this.$socket.client.emit('join', this.roomName);
     try {
       await peerUtil.populateAvailableMediaDevices();
-      this.localStream = await peerUtil.getLocalMediaStream(true, false);
+      this.localStream = await peerUtil.getLocalMediaStream(true, true);
       this.$refs.localVideo.srcObject = this.localStream;
     } catch (e) {
       console.error(e);
@@ -111,7 +112,7 @@ export default {
       // videoConstraint.frameRate = 15;
       videoConstraint.width = 3840;
       videoConstraint.height = 1920;
-      const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : false;
+      const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : true;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
 
       // const videoTrack = this.localStream.getVideoTracks()[0];
