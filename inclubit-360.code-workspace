@@ -8,25 +8,28 @@
 		}
 	],
 	"settings": {
-		"vetur.validation.template": false,
+		"eslint.workingDirectories": [
+			{
+				"mode": "auto"
+			}
+		],
 		"eslint.validate": [
 			"javascript",
 			"javascriptreact",
 			"typescript",
 			"vue"
 		],
-		"javascript.format.enable": false,
-		"eslint.workingDirectories": [
-			{
-				"mode": "auto"
-			}
-		],
+		"editor.codeActionsOnSave": {
+			"source.fixAll": false,
+			"source.fixAll.eslint": true
+		},
+		"javascript.format.enable": false, // seems to conflict with eslints formatter
+		"typescript.format.enable": false,
+		"vetur.validation.template": false,
 		"vetur.experimental.templateInterpolationService": true,
+		"vetur.format.enable": false,
 	},
 	"launch": {
-		// Use IntelliSense to learn about possible attributes.
-		// Hover to view descriptions of existing attributes.
-		// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 		"version": "0.2.0",
 		"configurations": [
 			{
@@ -34,20 +37,10 @@
 				"request": "launch",
 				"name": "Quasar App: chrome",
 				"url": "http://localhost:8080",
-				"webRoot": "${workspaceFolder}/app/src",
-				"breakOnLoad": true,
+				"webRoot": "${workspaceFolder:app}/app/src",
 				"sourceMapPathOverrides": {
-					"webpack:///./src/*": "${webRoot}/*"
+					"webpack:///./app/src/*": "${webRoot}/*"
 				}
-			},
-			{
-				"type": "node",
-				"request": "launch",
-				"name": "Launch Program",
-				"skipFiles": [
-					"<node_internals>/**"
-				],
-				"program": "${workspaceFolder}\\app\\quasar.conf.js"
 			}
 		]
 	},

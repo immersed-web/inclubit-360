@@ -5,7 +5,7 @@ import VueSocketIOExt from 'vue-socket.io-extended';
 
 let socketUrl = `${process.env.BACKEND_SERVER_PROTOCOL}://${process.env.BACKEND_SERVER}/`;
 if (process.env.SIGNALING_PORT) {
-  socketUrl = `${process.env.BACKEND_SERVER_PROTOCOL}://${process.env.BACKEND_SERVER}:${process.env.SIGNALING_PORT}/`
+  socketUrl = `${process.env.BACKEND_SERVER_PROTOCOL}://${process.env.BACKEND_SERVER}:${process.env.SIGNALING_PORT}/`;
 }
 
 console.log('socketUrl: ', socketUrl);

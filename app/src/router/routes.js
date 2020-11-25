@@ -9,6 +9,7 @@ const routes = [
       { path: 'watch', component: () => import('pages/Viewer.vue') },
       { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
       { path: 'aframe', component: () => import('pages/AframeTest.vue') },
+      { path: 'settings', component: () => import('pages/Settings.vue') },
     ],
   },
 ];

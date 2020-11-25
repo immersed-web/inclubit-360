@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "@vue/devtools": "^5.3.3",
     "aframe": "^1.0.4",
     "axios": "^0.18.1",
     "camera-controls": "^1.22.1",

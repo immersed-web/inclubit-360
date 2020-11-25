@@ -12,6 +12,7 @@
       round
       color="black"
       icon="settings"
+      to="settings"
     >
       <q-tooltip>
         Inställningar

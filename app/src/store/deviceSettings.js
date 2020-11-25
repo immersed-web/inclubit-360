@@ -19,10 +19,20 @@ export default {
     },
   },
   mutations: {
+    // TODO: Rename to setActiveMediaDeviceIds (remove All). since they by design are optional.
     setAllActiveMediaDeviceIds (state, payload) {
       if (payload.activeVideoDeviceId) { state.activeVideoDeviceId = payload.activeVideoDeviceId; }
       if (payload.activeAudioInputDeviceId) { state.activeAudioInputDeviceId = payload.activeAudioInputDeviceId; }
       if (payload.activeAudioOutputDeviceId) { state.activeAudioOutputDeviceId = payload.activeAudioOutputDeviceId; }
+    },
+    setActiveVideoDeviceId (state, id) {
+      state.activeVideoDeviceId = id;
+    },
+    setActiveAudioInputDeviceId (state, id) {
+      state.activeAudioInputDeviceId = id;
+    },
+    setActiveAudioOutputDeviceId (state, id) {
+      state.activeAudioOutputDeviceId = id;
     },
     setAvailableMediaDevices (state, payload) {
       state.availableMediaDevices = payload;
