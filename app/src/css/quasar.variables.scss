@@ -8,17 +8,68 @@
 // Your own variables (that are declared here) and Quasar's own
 // ones will be available out of the box in your .vue/.scss/.sass files
 
+$body-font-size   : 1rem !default
+// $body-line-height : 1.5 !default
+
 // It's highly recommended to change the default colors
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary   : #1976D2;
+// defaults:
+// $primary   : #1976D2;
+// $secondary : #26A69A;
+// $accent    : #9C27B0;
+
+// $dark      : #1D1D1D;
+
+// $positive  : #21BA45;
+// $negative  : #C10015;
+// $info      : #31CCEC;
+// $warning   : #F2C037;
+
+$primary   : #00adb5;
 $secondary : #26A69A;
 $accent    : #9C27B0;
 
-$dark      : #1D1D1D;
+$dark      : #393e46;
+
+body.body--dark {
+  background: #222831;
+}
 
 $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
+
+// // Comfortaa
+// @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+// $typography-font-family: 'Comfortaa', sans-serif;
+
+// // Cairo
+// @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
+// $typography-font-family: 'Cairo', sans-serif;
+
+// // Teko
+// @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&display=swap');
+// $typography-font-family: 'Teko', sans-serif;
+
+// // Nunito
+// @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap');
+// $typography-font-family: 'Nunito', sans-serif;
+
+// // MuseoModerno
+// @import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@100;200;300;400;500;600;700;800;900&display=swap');
+// $typography-font-family: 'MuseoModerno', cursive;
+
+// //Spartan font
+// @import url('https://fonts.googleapis.com/css2?family=Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap');
+// $typography-font-family : 'Spartan', sans-serif !default
+
+// //Work sans font
+// @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+// $typography-font-family : 'Work Sans', sans-serif !default
+
+// Poppins font
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+$typography-font-family : 'Poppins', sans-serif !default

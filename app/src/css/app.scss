@@ -1,12 +1,27 @@
 // app global css in SCSS form
+// body.body--dark {
+//   background: #000;
+// }
 
+// .main-video {
+//   background-color: grey;
+//   position: fixed;
+//   left: 2vw;
+//   top: 2vh;
+//   width: 96vw;
+//   height: 96vh;
+//   // z-index: -1;
+// }
 
-.main-video {
-  background-color: grey;
-  position: fixed;
-  left: 2vw;
-  top: 2vh;
-  width: 96vw;
-  height: 96vh;
-  // z-index: -1;
+$heading-base-size: 1.7rem;
+$heading-scale: .14; // amount headings shrink from h1 to h6
+
+@for $i from 1 through 6 {
+  h#{$i} {
+    font-size: $heading-base-size - $heading-scale * ($i);
+    line-height: $heading-base-size - $heading-scale * ($i) + 0.5;
+    font-weight: 600;
+    margin-top: 0.2rem + 0.2 * (7 - $i);
+    margin-bottom: 0.4rem + 0.2 * (7 - $i);
+  }
 }
