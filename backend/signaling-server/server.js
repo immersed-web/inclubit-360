@@ -125,10 +125,10 @@ io.on("connection", function (socket) {
       .catch((err) => console.log(`err: ${err}`));
   }) //on join end
 
-  socket.on("leave", data => {
-    socket.leave(data)
+  socket.on("leave", roomName => {
+    socket.leave(roomName)
       .then(() => {
-        console.log(`left room: ${data}`);
+        console.log(`left room: ${roomName}`);
         socket.removeAllListeners("signal");
       })
       .catch(err => console.log(`error leaving room ${err}`));
