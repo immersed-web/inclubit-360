@@ -1,5 +1,6 @@
 <template>
   <q-page>
+    <h1>{{ roomName }}</h1>
     <video
       ref="remoteVideo"
       :class="{'main-video': !localVideoIsBig, 'thumbnail-video': localVideoIsBig, }"
@@ -7,8 +8,7 @@
       @click="localVideoIsBig = localVideoIsBig? !localVideoIsBig:localVideoIsBig"
     />
     <div id="overlay-container">
-      <OverlayTitle text="CAMERA" />
-      <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" />
+      <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
       <video
         ref="localVideo"
         :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
@@ -16,30 +16,28 @@
         autoplay
         @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
       />
-      <label>
+      <!-- <label>
         Video In
         <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
           <option v-for="deviceObject in availableVideoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
-      </label>
-      <p id="chat-message">
+      </label> -->
+      <!-- <p id="chat-message">
         {{ inChatMessage }}
-      </p>
+      </p> -->
     </div>
   </q-page>
 </template>
 
 <script>
 
-import { mapState, mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 import peerUtil from 'js/peer-utils';
-import OverlayTitle from 'src/components/OverlayTitle';
 
 export default {
   name: 'Camera',
   components: {
-    OverlayTitle,
   },
   data () {
     return {
@@ -54,10 +52,12 @@ export default {
   computed: {
     ...mapState({
       roomName: state => state.connectionSettings.roomName,
-      availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
+      videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
+      audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
+      // availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
       // availableVideoInputDevices: state => state.deviceSettings.availableVideoInputDevices,
     }),
-    ...mapGetters(['availableVideoInputDevices']),
+    // ...mapGetters(['availableVideoInDevices']),
     // availableVideoInputDevices () {
     //   return this.availableMediaDevices.filter(device => device.kind === 'videoinput');
     // },
@@ -78,7 +78,13 @@ export default {
     this.$socket.client.emit('join', this.roomName);
     try {
       await peerUtil.populateAvailableMediaDevices();
-      this.localStream = await peerUtil.getLocalMediaStream(true, true);
+      const videoConstraints = {
+        deviceId: this.videoDeviceId,
+      };
+      const audioConstraints = {
+        deviceId: this.audioInDeviceId,
+      };
+      this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
       this.$refs.localVideo.srcObject = this.localStream;
     } catch (e) {
       console.error(e);
@@ -137,7 +143,7 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 30, 255, 0.2);
+  // background-color: rgba(0, 30, 255, 0.2);
   z-index: 100;
   pointer-events: none;
   * {

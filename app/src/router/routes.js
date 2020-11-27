@@ -5,8 +5,8 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Start.vue') },
-      { path: 'camera', component: () => import('pages/Camera.vue') },
-      { path: 'watch', component: () => import('pages/Viewer.vue') },
+      { name: 'Camera View', path: 'camera', component: () => import('pages/Camera.vue') },
+      { name: 'Watcher View', path: 'watch', component: () => import('pages/Viewer.vue') },
       { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
       { path: 'aframe', component: () => import('pages/AframeTest.vue') },
       { path: 'settings', component: () => import('pages/Settings.vue') },

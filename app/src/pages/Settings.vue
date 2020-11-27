@@ -1,78 +1,124 @@
 <template>
   <q-page padding>
-    <h1>SETTINGS PAGE</h1>
+    <h1>
+      <q-btn
+        round
+        flat
+        icon="arrow_back_ios"
+        class="q-mr-xl"
+        to="/"
+      />Settings
+    </h1>
     <div class="row">
-      <q-card bordered flat class="col">
-        <q-card-section v-if="chosenVideoDevice">
-          <h3>{{ chosenVideoDevice.label }}</h3>
+      <device-picker
+        icon="videocam"
+        label="Camera"
+        :device-list="availableVideoDevices"
+        :chosen-device-id="chosenVideoDeviceId"
+        @devicePicked="setChosenVideoDeviceId"
+      />
+      <device-picker
+        icon="mic"
+        label="Microphone"
+        :device-list="availableAudioInDevices"
+        :chosen-device-id="chosenAudioInDeviceId"
+        @devicePicked="setChosenAudioInDeviceId"
+      />
+      <!-- <q-card
+        v-for="(deviceData, key) in {Camera: {chosen: chosenVideoDevice, list: availableVideoDevices}, Microphone: {chosen: chosenAudioInDevice, list: availableAudioInDevices}}"
+        :key="key"
+        bordered
+        flat
+        class="col q-ma-lg"
+      >
+        <q-card-section v-if="deviceData.chosen">
+          <h2><q-icon size="xl" class="q-mr-md" name="videocam" />{{ key }}</h2>
+          <h3 />
         </q-card-section>
-        <q-list>
-          <q-item v-for="videoDevice in availableVideoInputDevices" :key="videoDevice.label" clickable @click="setVideoInputId(videoDevice.deviceId)">
+        <q-list class="q-ma-md">
+          <q-item v-for="videoDevice in deviceData.list" :key="videoDevice.label" clickable @click="setChosenVideoDeviceId(videoDevice.deviceId)">
             <q-item-label>
               <p>{{ videoDevice.label }} </p>
             </q-item-label>
           </q-item>
         </q-list>
-      </q-card>
-      <q-card bordered flat class="col">
+      </q-card> -->
+      <!-- <q-card bordered flat class="col">
         <q-list>
-          <q-item v-for="audioDevice in availableAudioInputDevices" :key="audioDevice.label" clickable @click="setAudioInputId(audioDevice.deviceId)">
+          <q-item v-for="audioDevice in availableAudioInDevices" :key="audioDevice.label" clickable @click="setChosenAudioInDeviceId(audioDevice.deviceId)">
             <q-item-label>
               <p>{{ audioDevice.label }}</p>
             </q-item-label>
           </q-item>
         </q-list>
-      </q-card>
+      </q-card> -->
     </div>
+    <q-btn
+      size="xl"
+      label="save"
+      color="primary"
+      class="q-ma-md"
+      :disable="saveConfirmed"
+      @click="saveSettings"
+    />
+    <q-icon v-if="saveConfirmed" size="xl" name="check" color="positive" />
   </q-page>
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapState } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
+const { mapGetters, mapMutations, mapState, mapActions } = createNamespacedHelpers('deviceSettings');
 import { populateAvailableMediaDevices } from 'src/js/peer-utils';
+import DevicePicker from './settings/DevicePicker.vue';
 export default {
   name: 'Settings',
+  components: { DevicePicker },
   data () {
     return {
-
+      saveConfirmed: false,
     };
   },
   computed: {
-    ...mapGetters(['availableVideoInputDevices', 'availableAudioInputDevices', 'availableAudioOutputDevices']),
-    ...mapState({
-      activeVideoDeviceId: state => state.deviceSettings.activeVideoDeviceId,
-    }),
+    ...mapGetters(['availableVideoDevices', 'availableAudioInDevices', 'availableAudioOutDevices']),
+    ...mapState(['chosenVideoDeviceId', 'chosenAudioInDeviceId', 'chosenAudioOutDeviceId']),
+    //   {
+    //   chosenVideoDeviceId: state => state.chosenVideoDeviceId,
+    //   chosenVideoDeviceId: state => state.chosenVideoDeviceId,
+    // }
+    // ),
     chosenVideoDevice () {
-      return this.availableVideoInputDevices.find(dev => {
-        return dev.deviceId === this.activeVideoDeviceId;
+      return this.availableVideoDevices.find(dev => {
+        return dev.deviceId === this.chosenVideoDeviceId;
       });
     },
-    chosenAudioInputDevice () {
-      return this.availableAudioInputDevices.find(dev => {
-        return dev.deviceId === this.activeAudioInputDeviceId;
+    chosenAudioInDevice () {
+      return this.availableAudioInDevices.find(dev => {
+        return dev.deviceId === this.chosenAudioInputDeviceId;
       });
     },
-    chosenAudioOutputDevice () {
-      return this.availableAudioOutputDevices.find(dev => {
-        return dev.deviceId === this.activeAudioOutputDeviceId;
+    chosenAudioOutDevice () {
+      return this.availableAudioOutDevices.find(dev => {
+        return dev.deviceId === this.chosenAudioOutputDeviceId;
       });
     },
   },
-  created () {
-    populateAvailableMediaDevices();
-    console.log(this.availableVideoInputDevices);
-    console.log(this.availableAudioInputDevices);
-    console.log(this.availableAudioOutputDevices);
+  async created () {
+    await populateAvailableMediaDevices();
+    this.initializeChosenMediaDevices();
+
+    // console.log(this.availableVideoDevices);
+    // console.log(this.availableAudioInDevices);
+    // console.log(this.availableAudioOutDevices);
   },
   methods: {
-    ...mapMutations(['setActiveVideoDeviceId', 'setActiveAudioInputDeviceId', 'setActiveAudioOutputDeviceId']),
-    setAudioInputId (id) {
-      console.log(id);
-      this.setActiveAudioInputDeviceId(id);
-    },
-    setVideoInputId (id) {
-      this.setActiveVideoDeviceId(id);
-      console.log(id);
+    ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId', 'initializeMedia']),
+    ...mapActions(['initializeChosenMediaDevices', 'saveChosenDevicesToStorage']),
+    saveSettings () {
+      this.saveChosenDevicesToStorage();
+      this.saveConfirmed = true;
+      setTimeout(() => {
+        this.saveConfirmed = false;
+      }, 1000);
     },
   },
 };

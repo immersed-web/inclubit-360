@@ -1,7 +1,6 @@
 <template>
   <q-page>
-    <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" />
-    <OverlayTitle text="VIEWER" />
+    <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
     <!-- <video
       ref="localVideo"
       class="local-video"
@@ -37,11 +36,9 @@
 import { mapState } from 'vuex';
 import peerUtil from 'js/peer-utils';
 // import sceneUtils from 'js/scene-utils';
-import OverlayTitle from 'src/components/OverlayTitle';
 export default {
   name: 'Viewer',
   components: {
-    OverlayTitle,
   },
   data () {
     return {
@@ -76,6 +73,9 @@ export default {
     peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage);
     // sceneUtils.initThreeScene(this.$refs.drawCanvas);
     // console.log('videoSphereSource is:', this.$refs.videoSphereSource);
+  },
+  beforeDestroy () {
+    this.$socket.client.emit('leave', this.roomName);
   },
   methods: {
     onSignal (d) {
@@ -161,7 +161,7 @@ export default {
 }
 
 .thumbnail-video {
-  background-color: white;
+  background-color: black;
   width: 20vw;
   position: fixed;
   left: 3rem;

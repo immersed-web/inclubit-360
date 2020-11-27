@@ -1,51 +1,81 @@
 
 export default {
-  namespaced: false,
+  namespaced: true,
   state: {
-    activeVideoDeviceId: null,
-    activeAudioInputDeviceId: null,
-    activeAudioOutputDeviceId: null,
+    chosenVideoDeviceId: null,
+    chosenAudioInDeviceId: null,
+    chosenAudioOutDeviceId: null,
     availableMediaDevices: [],
   },
   getters: {
-    availableVideoInputDevices (state) {
+    availableVideoDevices (state) {
       return state.availableMediaDevices.filter(device => device.kind === 'videoinput');
     },
-    availableAudioInputDevices (state) {
+    availableAudioInDevices (state) {
       return state.availableMediaDevices.filter(device => device.kind === 'audioinput');
     },
-    availableAudioOutputDevices (state) {
+    availableAudioOutDevices (state) {
       return state.availableMediaDevices.filter(device => device.kind === 'audiooutput');
     },
   },
   mutations: {
-    // TODO: Rename to setActiveMediaDeviceIds (remove All). since they by design are optional.
-    setAllActiveMediaDeviceIds (state, payload) {
-      if (payload.activeVideoDeviceId) { state.activeVideoDeviceId = payload.activeVideoDeviceId; }
-      if (payload.activeAudioInputDeviceId) { state.activeAudioInputDeviceId = payload.activeAudioInputDeviceId; }
-      if (payload.activeAudioOutputDeviceId) { state.activeAudioOutputDeviceId = payload.activeAudioOutputDeviceId; }
+    /**
+     * @param  {} state - the local state
+     * @param  {Object} payload - a js object containing the ids for chosen devices
+     * @param  {string} [payload.videoDeviceId] - id of video device
+     * @param  {string} [payload.audioInDeviceId] - id of audio in device
+     * @param  {string} [payload.audioOutDeviceId] - id of audio out device
+     */
+    setChosenDeviceIds (state, payload) {
+      if (payload.videoDeviceId) { state.chosenVideoDeviceId = payload.videoDeviceId; }
+      if (payload.audioInDeviceId) { state.chosenAudioInDeviceId = payload.audioInDeviceId; }
+      if (payload.audioOutDeviceId) { state.chosenAudioOutDeviceId = payload.audioOutDeviceId; }
     },
-    setActiveVideoDeviceId (state, id) {
-      state.activeVideoDeviceId = id;
+    setChosenVideoDeviceId (state, id) {
+      state.chosenVideoDeviceId = id;
     },
-    setActiveAudioInputDeviceId (state, id) {
-      state.activeAudioInputDeviceId = id;
+    setChosenAudioInDeviceId (state, id) {
+      state.chosenAudioInDeviceId = id;
     },
-    setActiveAudioOutputDeviceId (state, id) {
-      state.activeAudioOutputDeviceId = id;
+    setChosenAudioOutDeviceId (state, id) {
+      state.chosenAudioOutDeviceId = id;
     },
     setAvailableMediaDevices (state, payload) {
       state.availableMediaDevices = payload;
     },
   },
   actions: {
-    initializeActiveMediaDevices ({ commit, getters }) {
-      const activeMediaObject = {
-        activeVideoDeviceId: getters.availableVideoInputDevices[0].deviceId,
-        activeAudioInputDeviceId: getters.availableAudioInputDevices[0].deviceId,
-        activeAudioOutputDeviceId: getters.availableAudioOutputDevices[0].deviceId,
-      };
-      commit('setAllActiveMediaDeviceIds', activeMediaObject);
+    // TODO: Check the saved deviceIds in storage exists in available-lists
+    initializeChosenMediaDevices ({ commit, getters }) {
+      let chosenDevices = localStorage.getItem('chosenDevices');
+      if (chosenDevices) {
+        chosenDevices = JSON.parse(chosenDevices);
+
+        // Fallback to available alternatives if saved devices aren't available
+        if (!getters.availableVideoDevices.find(dev => dev.deviceId === chosenDevices.videoDeviceId)) {
+          chosenDevices.videoDeviceId = getters.availableVideoDevices[0].deviceId;
+        }
+        if (!getters.availableAudioInDevices.find(dev => dev.deviceId === chosenDevices.audioInDeviceId)) {
+          chosenDevices.audioInDeviceId = getters.availableAudioInDevices[0].deviceId;
+        }
+        if (!getters.availableAudioOutDevices.find(dev => dev.deviceId === chosenDevices.audioOutDeviceId)) {
+          chosenDevices.audioOutDeviceId = getters.availableAudioOutDevices[0].deviceId;
+        }
+      } else {
+        chosenDevices = {
+          videoDeviceId: getters.availableVideoDevices[0].deviceId,
+          audioInDeviceId: getters.availableAudioInDevices[0].deviceId,
+          audioOutDeviceId: getters.availableAudioOutDevices[0].deviceId,
+        };
+      }
+      commit('setChosenDeviceIds', chosenDevices);
+    },
+    saveChosenDevicesToStorage ({ state }) {
+      localStorage.setItem('chosenDevices', JSON.stringify({
+        videoDeviceId: state.chosenVideoDeviceId,
+        audioInDeviceId: state.chosenAudioInDeviceId,
+        audioOutDeviceId: state.chosenAudioOutDeviceId,
+      }));
     },
   },
 };

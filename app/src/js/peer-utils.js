@@ -118,7 +118,7 @@ export function setPeerOutputStream (stream) {
 
 export async function populateAvailableMediaDevices () {
   const devices = await navigator.mediaDevices.enumerateDevices();
-  store.commit('setAvailableMediaDevices', devices);
+  store.commit('deviceSettings/setAvailableMediaDevices', devices);
   // console.log(store);
 }
 
