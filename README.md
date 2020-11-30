@@ -131,14 +131,8 @@ The following ports are required to be opened on the backend server:
 
 
 // TODO README:
-* How caddy reverse proxies socketio and does static file serving on the rest
-* How the signaling is responsible for passing on link info between the peers
-* how COTURN handles STUN and TURN packets
+* Describe that there is a separate .env file in app folder. Should find a way to deal with that...
 * a section about how webrtc works
-* needed ports
-* describe the scripts
-* describe the config of .env
-* installation/setup instruction
 * Investigate running docker on [vmware](https://vmware.github.io/vic-product/assets/files/html/1.3/vic_app_dev/deploy_multiple_docker_compose.html)
 * Investigate running on azure
 * Investigate running on windows server
