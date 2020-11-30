@@ -24,7 +24,7 @@ The different containers are:
   - STUN/TURN Server
 
 #### Caddy
-The file server is an instance of [Caddy v2](https://caddyserver.com/). Caddy is a server software written in the language Go. It has built in functionality for retrieving and setting up https certificates using the free, open and automated certificate authority, [Let's Encrypt](https://letsencrypt.org/). In this project, Caddy is set up to act as both a static file server aswell as a reverse proxy for the signaling server. Key parts of the caddy configuration:
+The file server is an instance of [Caddy v2](https://caddyserver.com/). Caddy is a server software written in the language Go. It has built in functionality for retrieving and setting up https certificates using the free, open and automated certificate authority, [Let's Encrypt](https://letsencrypt.org/). In this project, Caddy is set up to act as both a static file server as well as a reverse proxy for the signaling server. Key parts of the caddy configuration:
 ```
     reverse_proxy /socket.io/* signaling:3000
     file_server {
@@ -113,7 +113,7 @@ docker-compose up --build
 There are some shell scripts provided to help with seting up the environment for running the backend:
 * `setup-docker.sh` - This script will attempt to download and install docker as well as docker-compose. It will try to enable docker as a daemon that starts automatically on boot. It will also create a folder called docker-persistence, for mounting volumes of the docker-containers. The volumes are used to store persistent data between building/tearing down the docker containers.
 * `setup-node.sh` - This script will download and install nodejs. Nodejs is required to run the signaling server. It's also required to build the frontend website from sourcecode.
-* `prepare-spa-build.sh` - This script will build the inclubit 360 frontend website and copy the result to the caddy folder to be used by Caddy. This script requires nodejs to be installed.
+* `prepare-spa-build.sh` - This script will build the inclubit 360 frontend website and copy the result to the caddy folder to be used by the Caddy docker container. This script requires nodejs to be installed.
 
 
 #### Ports
@@ -131,7 +131,6 @@ The following ports are required to be opened on the backend server:
 
 
 // TODO README:
-* Describe that there is a separate .env file in app folder. Should find a way to deal with that...
 * a section about how webrtc works
 * Investigate running docker on [vmware](https://vmware.github.io/vic-product/assets/files/html/1.3/vic_app_dev/deploy_multiple_docker_compose.html)
 * Investigate running on azure

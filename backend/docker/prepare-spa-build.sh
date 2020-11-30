@@ -23,5 +23,5 @@ npm --prefix ../../app run build
 echo "removing previous build"
 rm -r ../caddy/spa/
 
-echo "copy new build into spa ../caddy/spa/"
+echo "copy new build into spa folder ../caddy/spa/"
 cp -r ../../app/dist/spa/ ../caddy/spa/
