@@ -6,7 +6,7 @@
 # if [ "$EUID" -ne 0 ]; then
 if [[ $(id -u) -ne 0 ]] ; then
     echo "Please run as root"
-    echo 'This script runs a bunch of stuff as root in order to configure the environment'
+    echo 'This script runs a bunch of stuff that requires privileges in order to configure the environment'
     exit
 fi
 
@@ -31,7 +31,7 @@ exe systemctl start docker
 say 'Verifying docker is installed'
 exe docker --version
 
-say 'Adding ubuntu to the docker user group'
+say 'Adding ubuntu user to the docker user group'
 exe usermod -a -G docker ubuntu
 say 'Installing docker compose'
 exe curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose

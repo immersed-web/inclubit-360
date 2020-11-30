@@ -48,7 +48,7 @@ In general terms:
 
 ### Installation
 
-> **Prerequisites:** Initially you will need [Git](https://git-scm.com/) to be able to fetch the repository. There are some additional prerequisites to be able to run the backend. There are a few bash scripts included in the repository to help with installing those requirements. Have a look below in the section "**bash utility scripts**"
+> **Prerequisites:** Initially you will need [Git](https://git-scm.com/) to be able to fetch the repository. There are some additional prerequisites to be able to run the backend. There are a few bash scripts included in the repository to help with installing those requirements. Have a look below in the section [Bash utility scripts](#bash-utility-scripts)
 
 #### Instructions
 To install inclubit backend and run it on your own server, you first need to retrieve the repository from github.
@@ -63,6 +63,9 @@ git clone https://github.com/Dealerpriest/inclubit-360.git
 
 #### Bash Utility Scripts
 There are some shell scripts provided to help with seting up the environment for running the backend:
+* `setup-docker.sh` - This script will attempt to download and install docker as well as docker-compose. It will try to enable docker as a daemon that starts automatically on boot. It will also create a folder called docker-persistence, for mounting volumes of the docker-containers. The volumes are used to store persistent data between building/tearing down the docker containers.
+* `setup-node.sh` - This script will download and install nodejs. Nodejs is required to run the signaling server. It's also required to build the frontend website from sourcecode.
+* `prepare-spa-build.sh` - This script will build the inclubit 360 frontend website and copy the result to the caddy folder to be used by Caddy. This script requires nodejs to be installed.
 
 
 #### Ports
