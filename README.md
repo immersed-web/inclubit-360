@@ -50,6 +50,31 @@ In general terms:
 
 > **Prerequisites:** Initially you will need [Git](https://git-scm.com/) to be able to fetch the repository. There are some additional prerequisites to be able to run the backend. There are a few bash scripts included in the repository to help with installing those requirements. Have a look below in the section [Bash utility scripts](#bash-utility-scripts)
 
+#### .env
+This project relies on an .env file to configure relevant aspects of the system.
+There is an example called `example.env` in the folder *./backend/docker*. This is just an example file. You need to create an .env file (the filename should be **.env**, only), and in this file provide the relevant settings. One way would be to duplicate the example file, rename it to .env and set the correct environment variables in the file. The example file looks like this:
+
+**example.env**
+```
+# This file configures the relevant parts of the docker containers
+# The file should be in same directory as docker-compose.yml on your server
+
+### MAIN CONFIG ###
+
+### Advicable to set the following two so they are in sync http=80, https=443
+BACKEND_SERVER_PROTOCOL=https
+BACKEND_DEFAULT_PORT_NUMBER=443
+# The domain name of the robbit server that in turn runs all the containers
+BACKEND_SERVER=a.domain.that.you.have.registered.and.owns
+
+### TURN SERVER CONFIG ###
+TURN_USER=REPLACETHISWITHSOMENICENAME
+TURN_PASSWORD=USEANICESECRET
+TURN_UDP_PORT=3478
+TURN_TLS_PORT=5349
+```
+A normal setup would require settings the BACKEND_SERVER, TURN_USER and TURN_PASSWORD. The rest could be left as is.
+
 #### Instructions
 To install inclubit backend and run it on your own server, you first need to retrieve the repository from github.
 Using the terminal, go to your home folder on the server:
