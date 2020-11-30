@@ -60,6 +60,29 @@ Clone the repository from github:
 ```
 git clone https://github.com/Dealerpriest/inclubit-360.git
 ```
+Now let's install and setup everything.
+cd into docker folder:
+```
+cd inclubit-360/backend/docker`
+```
+install docker:
+```
+./setup-docker.sh
+```
+install nodejs:
+```
+./setup.node.sh
+```
+build and copy frontend website:
+```
+./prepare-spa-build.sh
+```
+
+Now let's run the project:
+```
+docker-compose up --build
+```
+
 
 #### Bash Utility Scripts
 There are some shell scripts provided to help with seting up the environment for running the backend:
