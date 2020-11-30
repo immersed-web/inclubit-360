@@ -1,1 +1,1 @@
-# webRTC signaling server for FDLIS project
+# webRTC signaling server for inclubit 360 project
