@@ -64,7 +64,7 @@ There is an example called `example.env` in the folder *./backend/docker*. This 
 ### Advicable to set the following two so they are in sync http=80, https=443
 BACKEND_SERVER_PROTOCOL=https
 BACKEND_DEFAULT_PORT_NUMBER=443
-# The domain name of the robbit server that in turn runs all the containers
+# The domain name of the server that in turn runs all the containers
 BACKEND_SERVER=a.domain.that.you.have.registered.and.owns
 
 ### TURN SERVER CONFIG ###
