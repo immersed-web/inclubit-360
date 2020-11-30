@@ -1,5 +1,5 @@
 # Inclubit 360
-Incubit 360 is a solution for enabling real-time communication between a 360 video camera and a VR-headset.
+Inclubit 360 is a solution for enabling real-time communication between a 360 video camera and a VR-headset.
 The system is implemented using web technologies. The client side consists of a website and/or a desktop application.
 
 ## App / Website
