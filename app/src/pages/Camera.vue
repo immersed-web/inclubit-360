@@ -1,38 +1,109 @@
 <template>
-  <q-page>
-    <h1>{{ roomName }}</h1>
-    <video
-      ref="remoteVideo"
-      :class="{'main-video': !localVideoIsBig, 'thumbnail-video': localVideoIsBig, }"
+  <!-- <q-page> -->
+  <div id="overlay-container" class="column no-wrap">
+    <q-toolbar>
+      <q-toolbar-title class="q-mr-xl" shrink>
+        {{ roomName }}
+      </q-toolbar-title>
+      <!-- <q-select v-model="selectedVideoDevice" label="Camera" outlined :options="videoDevices" /> -->
+
+      <!-- <div class="row no-wrap justify-evenly"> -->
+      <q-select
+        class="device-select-box col-auto q-mx-md"
+        dense
+        label="Video"
+        outlined
+        :options="availableVideoDevices"
+        option-value="deviceId"
+        emit-value
+        map-options
+        :value="videoDeviceId"
+        @input="setChosenVideoDeviceId"
+      >
+        <template v-slot:selected-item="scope">
+          <span class="ellipsis">{{ scope.opt.label }}</span>
+        </template>
+      </q-select>
+
+      <q-select
+        class="device-select-box  col-auto q-mx-md"
+        dense
+        label="Microphone"
+        outlined
+        :options="availableAudioInDevices"
+        option-value="deviceId"
+        emit-value
+        map-options
+        :value="audioInDeviceId"
+        @input="setChosenAudioInDeviceId"
+      >
+        <template v-slot:selected-item="scope">
+          <span class="ellipsis">{{ scope.opt.label }}</span>
+        </template>
+      </q-select>
+
+      <q-select
+        class="device-select-box  col-auto q-mx-md"
+        dense
+        label="Audio out"
+        outlined
+        :options="availableAudioOutDevices"
+        option-value="deviceId"
+        emit-value
+        map-options
+        :value="audioOutDeviceId"
+        @input="setChosenAudioOutDeviceId"
+      >
+        <template v-slot:selected-item="scope">
+          <span class="ellipsis">{{ scope.opt.label }}</span>
+        </template>
+      </q-select>
+      <!-- </div> -->
+      <q-space />
+      <q-separator spaced vertical inset />
+      <q-btn class="q-px-sm" color="negative" icon="call_end" />
+    </q-toolbar>
+    <!-- <video
+      ref="mainVideo"
+      class="main-video col-grow"
       autoplay
-      @click="localVideoIsBig = localVideoIsBig? !localVideoIsBig:localVideoIsBig"
-    />
-    <div id="overlay-container">
-      <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
+    /> -->
+    <div class="bg-teal flex-grow">
+      <!-- <div class="bg-yellow inner-box">
+        gul
+      </div> -->
       <video
+        ref="mainVideo"
+        class="main-video"
+        autoplay
+        muted
+      />
+    </div>
+    <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
+    <!-- <video
         ref="localVideo"
         :class="{'main-video': localVideoIsBig, 'thumbnail-video': !localVideoIsBig, }"
         muted
         autoplay
         @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
-      />
-      <!-- <label>
+      /> -->
+    <!-- <label>
         Video In
         <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
           <option v-for="deviceObject in availableVideoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
         </select>
       </label> -->
-      <!-- <p id="chat-message">
+    <!-- <p id="chat-message">
         {{ inChatMessage }}
       </p> -->
-    </div>
-  </q-page>
+  </div>
+  <!-- </q-page> -->
 </template>
 
 <script>
 
-import { mapState } from 'vuex';
-
+import { mapState, createNamespacedHelpers } from 'vuex';
+const { mapGetters, mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
 import peerUtil from 'js/peer-utils';
 
 export default {
@@ -43,10 +114,13 @@ export default {
     return {
       localVideoIsBig: false,
       localStream: null,
+      videoTrackSettings: null,
       inChatMessage: 'message',
       outChatMessage: '',
       chosenVideoInputId: null,
       chosenAudioInputId: null,
+      videoDevices: ['asf', 'asfsdg', 'asdgggk', 'asdfasdf', 'asdfasdf ölkj  jlökj  j ölkj  ölkj ölkjölk jj fdölkj'],
+      selectedVideoDevice: null,
     };
   },
   computed: {
@@ -54,13 +128,11 @@ export default {
       roomName: state => state.connectionSettings.roomName,
       videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
       audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
+      audioOutDeviceId: state => state.deviceSettings.chosenAudioOutDeviceId,
       // availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
       // availableVideoInputDevices: state => state.deviceSettings.availableVideoInputDevices,
     }),
-    // ...mapGetters(['availableVideoInDevices']),
-    // availableVideoInputDevices () {
-    //   return this.availableMediaDevices.filter(device => device.kind === 'videoinput');
-    // },
+    ...mapGetters(['availableVideoDevices', 'availableAudioInDevices', 'availableAudioOutDevices']),
   },
   sockets: {
     connect (data) {
@@ -77,7 +149,7 @@ export default {
   async mounted () {
     this.$socket.client.emit('join', this.roomName);
     try {
-      await peerUtil.populateAvailableMediaDevices();
+      // await peerUtil.populateAvailableMediaDevices();
       const videoConstraints = {
         deviceId: this.videoDeviceId,
       };
@@ -85,19 +157,23 @@ export default {
         deviceId: this.audioInDeviceId,
       };
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
-      this.$refs.localVideo.srcObject = this.localStream;
+      this.$refs.mainVideo.srcObject = this.localStream;
+
+      this.videoTrackSettings = this.localStream.getVideoTracks()[0].getSettings();
     } catch (e) {
       console.error(e);
     }
     console.log('creating peer with streamobject: ', this.localStream);
     peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.localStream);
 
-    // console.log(this.availableMediaDevices);
+    console.log(this.availableVideoDevices);
   },
   beforeDestroy () {
     peerUtil.destroyPeer();
   },
   methods: {
+    ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
+    ...mapActions(['saveChosenDevicesToStorage']),
     async start () {
       console.log('start was called');
     },
@@ -151,20 +227,45 @@ export default {
   }
 }
 
-.thumbnail-video {
-  background-color: white;
-  width: 20vw;
-  position: fixed;
-  left: 3rem;
-  top: 3rem;
-  z-index: -1;
-  border-radius: 1rem;
-  cursor: pointer;
-  box-shadow:
-  0 2.8px 2.2px rgba(0, 0, 0, 0.034),
-  0 6.7px 5.3px rgba(0, 0, 0, 0.048),
-  0 12.5px 10px rgba(0, 0, 0, 0.06)
+.main-video {
+  // z-index: -1;
+  width: 100%;
+  max-height: 100%
 }
+
+.flex-grow {
+  flex: 1;
+  min-height: 0;
+}
+
+.device-select-box {
+  flex: 0 1 auto;
+  width: 20rem;
+  // white-space: nowrap;
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // width: 20%;
+}
+
+// .inner-box {
+//   height: 100%;
+//   width: 50%
+// }
+
+// .thumbnail-video {
+//   background-color: white;
+//   width: 20vw;
+//   position: fixed;
+//   left: 3rem;
+//   top: 3rem;
+//   z-index: -1;
+//   border-radius: 1rem;
+//   cursor: pointer;
+//   box-shadow:
+//   0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+//   0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+//   0 12.5px 10px rgba(0, 0, 0, 0.06)
+// }
 
 #chat-message {
   position: fixed;

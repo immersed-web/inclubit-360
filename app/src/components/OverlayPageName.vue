@@ -1,5 +1,5 @@
 <template>
-  <div id="container">
+  <div id="overlay-page-name">
     <h4 class="overlay-heading">
       {{ text }}
     </h4>
@@ -36,15 +36,16 @@ export default {
 </script>
 
 <style scoped lang="scss">
-#container {
+#overlay-page-name {
   position: fixed;
   left: 2rem;
   bottom: 2rem;
   pointer-events: none;
-}
-.overlay-heading {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.6);
+  z-index: 500;
 
+  h4 {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.6);
+  }
 }
 </style>

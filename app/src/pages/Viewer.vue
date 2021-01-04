@@ -86,11 +86,6 @@ export default {
       console.log('received remote stream!!!', stream);
       this.remoteStream = stream;
 
-      // const videoTrack = this.remoteStream.getVideoTracks()[0];
-      // const capabilities = videoTrack.getCapabilities();
-      // console.log('capabilities: ', capabilities);
-      // console.log('settings', videoTrack.getSettings());
-
       this.$refs.remoteVideo.srcObject = this.remoteStream;
       // this.$refs.videoSphereSource.srcObject = this.remoteStream;
       // document.querySelector('#vr-video').srcObject = this.remoteStream;
@@ -131,10 +126,15 @@ export default {
       vSphere.setAttribute('src', '#remote-video');
       sceneEl.appendChild(vSphere);
 
-      // update dimensions info
-      const remoteVideo = document.querySelector('#remote-video');
-      this.debugData.videoWidth = remoteVideo.videoWidth;
-      this.debugData.videoHeight = remoteVideo.videoHeight;
+      // // update dimensions info
+      // const remoteVideo = document.querySelector('#remote-video');
+      // this.debugData.videoWidth = remoteVideo.videoWidth;
+      // this.debugData.videoHeight = remoteVideo.videoHeight;
+
+      const videoTrack = this.remoteStream.getVideoTracks()[0];
+      const settings = videoTrack.getSettings();
+      this.debugData.videoWidth = settings.width;
+      this.debugData.videoHeight = settings.height;
     },
   },
 

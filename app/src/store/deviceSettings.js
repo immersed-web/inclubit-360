@@ -46,7 +46,7 @@ export default {
   },
   actions: {
     // TODO: Check the saved deviceIds in storage exists in available-lists
-    initializeChosenMediaDevices ({ commit, getters }) {
+    getChosenDevicesFromStorage ({ commit, getters }) {
       let chosenDevices = localStorage.getItem('chosenDevices');
       if (chosenDevices) {
         chosenDevices = JSON.parse(chosenDevices);

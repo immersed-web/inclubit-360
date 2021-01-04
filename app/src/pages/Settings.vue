@@ -68,7 +68,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 const { mapGetters, mapMutations, mapState, mapActions } = createNamespacedHelpers('deviceSettings');
-import { populateAvailableMediaDevices } from 'src/js/peer-utils';
+// import { populateAvailableMediaDevices } from 'src/js/peer-utils';
 import DevicePicker from './settings/DevicePicker.vue';
 export default {
   name: 'Settings',
@@ -86,16 +86,19 @@ export default {
     //   chosenVideoDeviceId: state => state.chosenVideoDeviceId,
     // }
     // ),
+    /** @returns {Object} */
     chosenVideoDevice () {
       return this.availableVideoDevices.find(dev => {
         return dev.deviceId === this.chosenVideoDeviceId;
       });
     },
+    /** @returns {Object} */
     chosenAudioInDevice () {
       return this.availableAudioInDevices.find(dev => {
         return dev.deviceId === this.chosenAudioInputDeviceId;
       });
     },
+    /** @returns {Object} */
     chosenAudioOutDevice () {
       return this.availableAudioOutDevices.find(dev => {
         return dev.deviceId === this.chosenAudioOutputDeviceId;
@@ -103,15 +106,15 @@ export default {
     },
   },
   async created () {
-    await populateAvailableMediaDevices();
-    this.initializeChosenMediaDevices();
+    // await populateAvailableMediaDevices();
+    // this.initializeChosenMediaDevices();
 
     // console.log(this.availableVideoDevices);
     // console.log(this.availableAudioInDevices);
     // console.log(this.availableAudioOutDevices);
   },
   methods: {
-    ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId', 'initializeMedia']),
+    ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapActions(['initializeChosenMediaDevices', 'saveChosenDevicesToStorage']),
     saveSettings () {
       this.saveChosenDevicesToStorage();
