@@ -5,7 +5,6 @@
       <q-toolbar-title class="q-mr-xl" shrink>
         {{ roomName }}
       </q-toolbar-title>
-      <!-- <q-select v-model="selectedVideoDevice" label="Camera" outlined :options="videoDevices" /> -->
 
       <!-- <div class="row no-wrap justify-evenly"> -->
       <q-select
@@ -18,7 +17,7 @@
         emit-value
         map-options
         :value="videoDeviceId"
-        @input="setChosenVideoDeviceId"
+        @input="setChosenVideoDeviceId($event); devicesChanged = true"
       >
         <template v-slot:selected-item="scope">
           <span class="ellipsis">{{ scope.opt.label }}</span>
@@ -35,7 +34,7 @@
         emit-value
         map-options
         :value="audioInDeviceId"
-        @input="setChosenAudioInDeviceId"
+        @input="setChosenAudioInDeviceId($event); devicesChanged = true"
       >
         <template v-slot:selected-item="scope">
           <span class="ellipsis">{{ scope.opt.label }}</span>
@@ -52,16 +51,18 @@
         emit-value
         map-options
         :value="audioOutDeviceId"
-        @input="setChosenAudioOutDeviceId"
+        @input="setChosenAudioOutDeviceId($event); devicesChanged = true"
       >
         <template v-slot:selected-item="scope">
           <span class="ellipsis">{{ scope.opt.label }}</span>
         </template>
       </q-select>
+
+      <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="mediaDeviceChanged" />
       <!-- </div> -->
       <q-space />
       <q-separator spaced vertical inset />
-      <q-btn class="q-px-sm" color="negative" icon="call_end" />
+      <q-btn class="q-px-sm" color="negative" icon="call_end" @click="endCall" />
     </q-toolbar>
     <!-- <video
       ref="mainVideo"
@@ -87,12 +88,6 @@
         autoplay
         @click="localVideoIsBig = !localVideoIsBig? !localVideoIsBig:localVideoIsBig"
       /> -->
-    <!-- <label>
-        Video In
-        <select v-model="chosenVideoInputId" name="videoInput" @change="mediaDeviceChanged">
-          <option v-for="deviceObject in availableVideoInputDevices" :key="deviceObject.deviceId" :value="deviceObject.deviceId">{{ deviceObject.label }}</option>
-        </select>
-      </label> -->
     <!-- <p id="chat-message">
         {{ inChatMessage }}
       </p> -->
@@ -112,15 +107,14 @@ export default {
   },
   data () {
     return {
-      localVideoIsBig: false,
+      // localVideoIsBig: false,
       localStream: null,
       videoTrackSettings: null,
-      inChatMessage: 'message',
-      outChatMessage: '',
-      chosenVideoInputId: null,
-      chosenAudioInputId: null,
-      videoDevices: ['asf', 'asfsdg', 'asdgggk', 'asdfasdf', 'asdfasdf ölkj  jlökj  j ölkj  ölkj ölkjölk jj fdölkj'],
-      selectedVideoDevice: null,
+      // inChatMessage: 'message',
+      // outChatMessage: '',
+      // chosenVideoInputId: null,
+      // chosenAudioInputId: null,
+      devicesChanged: false,
     };
   },
   computed: {
@@ -174,6 +168,9 @@ export default {
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapActions(['saveChosenDevicesToStorage']),
+    changeTriggered (msg) {
+      console.log('CHAAAANGE', msg);
+    },
     async start () {
       console.log('start was called');
     },
@@ -184,25 +181,32 @@ export default {
       console.log('received message', data);
       this.inChatMessage = data;
     },
+    endCall () {
+      peerUtil.destroyPeer();
+      this.$router.replace('/');
+    },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
       this.outChatMessage = '';
     },
     async mediaDeviceChanged () {
-      const videoId = this.chosenVideoInputId;
+      this.devicesChanged = false;
+      const videoId = this.videoDeviceId;
       const videoConstraint = videoId ? { deviceId: videoId } : true;
       // videoConstraint.frameRate = 15;
-      videoConstraint.width = 3840;
-      videoConstraint.height = 1920;
-      const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : true;
+      // videoConstraint.width = 3840;
+      // videoConstraint.height = 1920;
+      const audioId = this.audioInDeviceId;
+      const audioConstraint = audioId ? { deviceId: audioId } : true;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
+      this.saveChosenDevicesToStorage();
 
       // const videoTrack = this.localStream.getVideoTracks()[0];
       // const capabilities = videoTrack.getCapabilities();
       // console.log('capabilities: ', capabilities);
       // console.log('settings', videoTrack.getSettings());
 
-      this.$refs.localVideo.srcObject = this.localStream;
+      this.$refs.mainVideo.srcObject = this.localStream;
       peerUtil.setPeerOutputStream(this.localStream);
     },
     switchVideoThumbnailVideo () {
