@@ -2,7 +2,7 @@
   <q-page>
     <h1>AFRAME TEST PAGE</h1>
     <a-scene>
-      <a-assets timeout="10000">
+      <!-- <a-assets timeout="10000">
         <video
           id="antarctica"
           ref="videoTag"
@@ -11,7 +11,7 @@
           src="https://bitmovin.com/player-content/playhouse-vr/progressive.mp4"
           @click="playVideo"
         />
-      </a-assets>
+      </a-assets> -->
       <!-- <a-videosphere src="#antarctica" /> -->
       <!-- <a-camera fov="70" /> -->
 
