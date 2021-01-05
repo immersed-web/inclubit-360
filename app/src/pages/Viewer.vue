@@ -1,5 +1,6 @@
 <template>
   <q-page>
+    <h1>WATCH</h1>
     <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
     <!-- <video
       ref="localVideo"
@@ -15,15 +16,17 @@
       @play="remoteVideoStarted"
     />
 
-    <a-scene>
-      <!-- <a-plane
+    <a-scene vr-mode-ui="enterVRButton: #enter-vr">
+      <a-plane
         position="0 0 -4"
         rotation="-90 0 0"
         width="4"
         height="4"
         color="#7BC8A4"
-      /> -->
+        shadow
+      />
     </a-scene>
+    <q-btn id="enter-vr" label="enter VR" />
 
     <!-- <canvas id="draw-canvas" ref="drawCanvas" class="main-video" /> -->
     <p id="chat-message">
