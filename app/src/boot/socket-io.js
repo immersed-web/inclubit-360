@@ -8,6 +8,11 @@ if (process.env.SIGNALING_PORT) {
   socketUrl = `${process.env.BACKEND_SERVER_PROTOCOL}://${process.env.BACKEND_SERVER}:${process.env.SIGNALING_PORT}/`;
 }
 
+// socketUrl = `${window.location.origin}:${process.env.SIGNALING_PORT}`;
+// socketUrl = 'https://inclubit-socket.loca.lt';
+
+// socketUrl = `${window.location.origin}`;
+
 console.log('socketUrl: ', socketUrl);
 
 const socket = io(socketUrl);
