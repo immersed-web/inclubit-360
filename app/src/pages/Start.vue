@@ -11,6 +11,7 @@
         dense
         outlined
         bordered
+        mask="xxxxxxxxxxxxxxxx"
         class="q-my-none"
       />
 
