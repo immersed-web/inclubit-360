@@ -73,6 +73,7 @@ io.on("connection", function (socket) {
     // prevent more than two clients in a room
     if (io.sockets.adapter.rooms[roomName] && Object.keys(io.sockets.adapter.rooms[roomName].sockets).length > 1) {
       console.log(`socket ${socket.id} couldn't join room ${roomName} since it was full`);
+      // TODO: Seems this triggers an error in node rather than sending an error event over the socket
       socket.emit('error', 'that room seems to be full');
 
       return;
