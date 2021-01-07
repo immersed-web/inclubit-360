@@ -15,6 +15,12 @@ export default {
     await peerUtil.populateAvailableMediaDevices();
     return store.dispatch('deviceSettings/getChosenDevicesFromStorage');
   },
+  sockets: {
+    // room (members) {
+    //   console.log('updating room members in store');
+    //   this.$store.commit('connectionSettings/setRoomMembers', members);
+    // },
+  },
   // async beforeCreate () {
   // },
   created () {

@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import peerUtil from 'js/peer-utils';
 // import sceneUtils from 'js/scene-utils';
 export default {
@@ -55,9 +55,24 @@ export default {
     };
   },
   computed: {
+    /** @returns {any} */
     ...mapState({
       roomName: state => state.connectionSettings.roomName,
+      peerConnectionState: state => state.connectionSettings.peerConnectionState,
     }),
+    /** @returns {any} */
+    ...mapGetters({
+      roomReady: 'connectionSettings/roomIsPopulated',
+    }),
+  },
+  watch: {
+    roomReady (newValue, oldValue) {
+      console.log('roomready changed to:', newValue);
+      console.log('connectionState:', this.peerConnectionState);
+      if (newValue && this.peerConnectionState !== 'connected') {
+        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+      }
+    },
   },
   sockets: {
     connect (data) {
@@ -66,6 +81,10 @@ export default {
     room (data) {
       console.log('room event from socket', data);
     },
+    readyToConnect () {
+      console.log('host is ready');
+      // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+    },
     signal (data) {
       console.log('signal event from socket', data);
       peerUtil.signalPeer(data);
@@ -73,11 +92,13 @@ export default {
   },
   mounted () {
     this.$socket.client.emit('join', this.roomName);
-    peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage);
+
     // sceneUtils.initThreeScene(this.$refs.drawCanvas);
     // console.log('videoSphereSource is:', this.$refs.videoSphereSource);
   },
   beforeDestroy () {
+    console.log('destroying viewer component');
+    peerUtil.destroyPeer();
     this.$socket.client.emit('leave', this.roomName);
   },
   methods: {
@@ -109,6 +130,9 @@ export default {
     },
     onMessage (data) {
       this.inChatMessage = data;
+    },
+    onClose () {
+      // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
     },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);

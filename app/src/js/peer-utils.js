@@ -3,6 +3,8 @@ import { store } from 'src/store';
 const Peer = require('simple-peer');
 let channel = null;
 let peerConnection = null;
+let mediaStream = null;
+// let restartTime = false;
 
 // TODO: Verify that this gets called and works
 MediaDevices.ondevicechange = () => {
@@ -10,8 +12,19 @@ MediaDevices.ondevicechange = () => {
   populateAvailableMediaDevices();
 };
 
-export async function createPeer (initiator, onSignal, onStream, onMessage, stream) {
-  destroyPeer();
+/**
+ * @param  { Boolean } initiator
+ * @param  { Function } onSignal
+ * @param  { Function } onStream
+ * @param  { Function } onMessage
+ * @param  { Function } [onClose]
+ * @param  { MediaStream } [stream]
+ */
+export async function createPeer (initiator, onSignal, onStream, onMessage, onClose, stream) {
+  console.log('createPeer called with params:', arguments);
+  // restartTime = _restartTime;
+  store.commit('connectionSettings/setPeerConnectionState', initiator ? 'connecting' : 'waiting');
+  // destroyPeer();
 
   const peerOpts = {
     initiator: initiator,
@@ -35,6 +48,10 @@ export async function createPeer (initiator, onSignal, onStream, onMessage, stre
   }
   peerConnection = new Peer(peerOpts);
   channel = peerConnection._pc.createDataChannel('chat', { negotiated: true, id: 1001 });
+  mediaStream = stream;
+
+  console.log('peer util stream obj:', mediaStream);
+
   channel.onmessage = (event) => {
     console.log('chatMessage', event.data);
     // this.receivedMessages.push(event.data);
@@ -49,11 +66,21 @@ export async function createPeer (initiator, onSignal, onStream, onMessage, stre
 
   peerConnection.on('connect', () => {
     console.log('peer connected');
+    store.commit('connectionSettings/setPeerConnectionState', 'connected');
   });
 
   peerConnection.on('close', () => {
     console.log('peer connection was closed');
-    createPeer(initiator, onSignal, onStream, onMessage, stream);
+    destroyPeer();
+    store.commit('connectionSettings/setPeerConnectionState', 'disconnected');
+    if (onClose) {
+      onClose();
+    }
+    // if (restartTime !== false) {
+    //   setTimeout(() => {
+    //     createPeer(initiator, onSignal, onStream, onMessage, mediaStream);
+    //   }, restartTime);
+    // }
   });
 
   peerConnection.on('error', (err) => {
@@ -83,6 +110,7 @@ export function destroyPeer () {
       // peerConnection.on('close', () => console.log('actively ignored peer closed event'));
       peerConnection.removeAllListeners('close');
       peerConnection.destroy();
+      store.commit('connectionSettings/setPeerConnectionState', 'disconnected');
     } else {
       console.log('no peer to destroy');
     }
@@ -107,6 +135,7 @@ export function sendMessage (chatMessage) {
 
 export function setPeerOutputStream (stream) {
   if (!stream) { return; }
+  mediaStream = stream;
   if (peerConnection) {
     if (peerConnection.streams.length && peerConnection.streams[0]) {
       console.log('removing previous stream');

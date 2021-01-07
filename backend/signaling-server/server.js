@@ -28,6 +28,13 @@ app.get("/", function (req, res) {
 //   // util.promisify(io.on);
 // })();
 
+function getRoomMembers(roomName){
+  if (!io.sockets.adapter.rooms[roomName]){
+    return undefined;
+  } 
+  return io.sockets.adapter.rooms[roomName].sockets;
+}
+
 io.on("connection", function (socket) {
   console.log("socket connection established. id: " + socket.id);
   // if this socket is already logged in,
@@ -56,26 +63,32 @@ io.on("connection", function (socket) {
     socket.leave = util.promisify(socket.leave);
   })();
 
-  socket.on("join", data => {
-    if(!data){
-      console.log('invalid room provided', data);
+  socket.on("join", roomName => {
+    if(!roomName){
+      console.log('invalid room provided', roomName);
       return;
     }
-    console.log(`socket ${socket.id} wants to join room ${data}`);
+    console.log(`socket ${socket.id} wants to join room ${roomName}`);
 
-    socket.join(data)
+    // prevent more than two clients in a room
+    if (io.sockets.adapter.rooms[roomName] && Object.keys(io.sockets.adapter.rooms[roomName].sockets).length > 1) {
+      console.log(`socket ${socket.id} couldn't join room ${roomName} since it was full`);
+      socket.emit('error', 'that room seems to be full');
+
+      return;
+    }
+
+    socket.join(roomName)
       .then(() => {
-        console.log(`socket ${socket.id} is now joined to room ${data}`);
+        console.log(`socket ${socket.id} is now joined to room ${roomName}`);
         console.log(`the connected socket has following rooms:`);
         console.log(socket.rooms);
 
-        let room = data;
+        let room = getRoomMembers(roomName);
 
-
-        //TODO: create some logic to prevent more than two clients in a room
-        // if(Object.keys(socket.rooms[room].sockets).length > 2){
-        //   socket.leave(room);
-        //   console.log(`socket ${socket.id} couldn't join room ${room} since it was full`);
+        // if(Object.keys(socket.rooms[roomName].sockets).length > 2){
+        //   socket.leave(roomName);
+        //   console.log(`socket ${socket.id} couldn't join room ${roomName} since it was full`);
         //   socket.emit('error', 'that room seems to be full');
 
         //   return;
@@ -85,8 +98,8 @@ io.on("connection", function (socket) {
         socket.on("signal", data => {
           console.log("received signaling message from socket " + socket.id);
           // console.log(data);
-          console.log(`propagating signaling message to room: ${room}`);
-          socket.to(room).emit("signal", data);
+          console.log(`propagating signaling message to room: ${roomName}`);
+          socket.to(roomName).emit("signal", data);
         });
 
         // socket.on("sendMessage", function(message) {
@@ -116,26 +129,48 @@ io.on("connection", function (socket) {
         // });
 
         // Send acknowledge that they joined the room
-        roomMessage = {
-          room: room,
-          joined: true
-        };
-        socket.emit("room", roomMessage);
+        // roomMessage = {
+        //   room: room,
+        //   joined: true
+        // };
+        socket.on('getRoom', () => {
+          socket.emit("room", room);
+        });
+
+        socket.on('peerObjectCreated', () => {
+          console.log('received peerObjectCreated from: ' + socket.id);
+          socket.to(roomName).emit("peerObjectCreated");
+        })
+
+        io.to(roomName).emit('room', room);
+
+        // socket.emit("room", room);
       })
       .catch((err) => console.log(`err: ${err}`));
   }) //on join end
 
   socket.on("leave", roomName => {
+    let room = getRoomMembers(roomName);
     socket.leave(roomName)
-      .then(() => {
-        console.log(`left room: ${roomName}`);
-        socket.removeAllListeners("signal");
+    .then(() => {
+      console.log(`left room: ${roomName}`);
+      socket.removeAllListeners("signal");
+      socket.removeAllListeners("getRoom");
+      socket.removeAllListeners("peerObjectCreated");
+      io.to(roomName).emit('room', room);
+      //send ack to socket separetaly
+      socket.emit('room', room);
       })
       .catch(err => console.log(`error leaving room ${err}`));
   })
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (reason) => {
     console.log("socket disconnected. id: " + socket.id);
+    console.log('reason: ', reason);
+    for(const key of Object.keys(socket.rooms)){
+      const members = getRoomMembers(key);
+      io.to(key).emit('room', members);
+    }
     // _.remove(users, function(user) {
     //   return user.socket == socket.id;
     // });

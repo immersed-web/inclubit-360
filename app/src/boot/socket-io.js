@@ -15,7 +15,7 @@ if (process.env.SIGNALING_PORT) {
 
 console.log('socketUrl: ', socketUrl);
 
-const socket = io(socketUrl);
+export const socket = io(socketUrl);
 
 export default async ({ app, router, store, Vue }) => {
   Vue.use(VueSocketIOExt, socket, { store });

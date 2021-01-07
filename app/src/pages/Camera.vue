@@ -69,7 +69,7 @@
       class="main-video col-grow"
       autoplay
     /> -->
-    <div class="bg-teal flex-grow">
+    <div class="flex-grow">
       <!-- <div class="bg-yellow inner-box">
         gul
       </div> -->
@@ -97,8 +97,8 @@
 
 <script>
 
-import { mapState, createNamespacedHelpers } from 'vuex';
-const { mapGetters, mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
+import { mapState, mapGetters, createNamespacedHelpers } from 'vuex';
+const { mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
 import peerUtil from 'js/peer-utils';
 
 export default {
@@ -126,7 +126,22 @@ export default {
       // availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
       // availableVideoInputDevices: state => state.deviceSettings.availableVideoInputDevices,
     }),
-    ...mapGetters(['availableVideoDevices', 'availableAudioInDevices', 'availableAudioOutDevices']),
+    ...mapGetters({
+      availableVideoDevices: 'deviceSettings/availableVideoDevices',
+      availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
+      availableAudioOutDevices: 'deviceSettings/availableAudioOutDevices',
+      roomPopulated: 'connectionSettings/roomIsPopulated',
+    }),
+  },
+  watch: {
+    //  (newValue, oldValue) {
+    //   console.log('roomready changed to:', newValue);
+    //   console.log('connectionState:', this.peerConnectionState);
+    //   if (newValue && this.peerConnectionState !== 'connected') {
+    //     await peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+    //     this.$socket.client.emit('peerObjectCreated');
+    //   }
+    // },
   },
   sockets: {
     connect (data) {
@@ -141,7 +156,6 @@ export default {
     },
   },
   async mounted () {
-    this.$socket.client.emit('join', this.roomName);
     try {
       // await peerUtil.populateAvailableMediaDevices();
       const videoConstraints = {
@@ -158,19 +172,19 @@ export default {
       console.error(e);
     }
     console.log('creating peer with streamobject: ', this.localStream);
-    peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.localStream);
+    await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
+    this.$socket.client.emit('peerObjectCreated');
+    this.$socket.client.emit('join', this.roomName);
 
     console.log(this.availableVideoDevices);
   },
   beforeDestroy () {
     peerUtil.destroyPeer();
+    this.$socket.client.emit('leave', this.roomName);
   },
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapActions(['saveChosenDevicesToStorage']),
-    changeTriggered (msg) {
-      console.log('CHAAAANGE', msg);
-    },
     async start () {
       console.log('start was called');
     },
@@ -181,8 +195,12 @@ export default {
       console.log('received message', data);
       this.inChatMessage = data;
     },
+    async onClose () {
+      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
+      this.$socket.client.emit('peerObjectCreated');
+    },
     endCall () {
-      peerUtil.destroyPeer();
+      // peerUtil.destroyPeer();
       this.$router.replace('/');
     },
     sendMessage () {
