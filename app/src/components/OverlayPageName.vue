@@ -39,7 +39,7 @@ export default {
 #overlay-page-name {
   position: fixed;
   left: 2rem;
-  bottom: 2rem;
+  top: 2rem;
   pointer-events: none;
   z-index: 500;
 

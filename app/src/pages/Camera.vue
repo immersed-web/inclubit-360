@@ -1,6 +1,17 @@
 <template>
   <!-- <q-page> -->
   <div id="overlay-container" class="column no-wrap">
+    <div class="flex-grow">
+      <!-- <div class="bg-yellow inner-box">
+        gul
+      </div> -->
+      <video
+        ref="mainVideo"
+        class="main-video"
+        autoplay
+        muted
+      />
+    </div>
     <q-toolbar>
       <q-toolbar-title class="q-mr-xl" shrink>
         {{ roomName }}
@@ -69,17 +80,7 @@
       class="main-video col-grow"
       autoplay
     /> -->
-    <div class="flex-grow">
-      <!-- <div class="bg-yellow inner-box">
-        gul
-      </div> -->
-      <video
-        ref="mainVideo"
-        class="main-video"
-        autoplay
-        muted
-      />
-    </div>
+
     <!-- <q-input v-model="outChatMessage" rounded label="say something" @keyup.enter="sendMessage" /> -->
     <!-- <video
         ref="localVideo"
@@ -150,9 +151,15 @@ export default {
     room (data) {
       console.log('room event from socket', data);
     },
+    roomFull (msg) {
+      console.log('roomFull:', msg);
+    },
     signal (data) {
       console.log('signal event from socket', data);
       peerUtil.signalPeer(data);
+    },
+    errorMessage (msg) {
+      console.log('socket error message:', msg);
     },
   },
   async mounted () {
@@ -179,8 +186,8 @@ export default {
     console.log(this.availableVideoDevices);
   },
   beforeDestroy () {
-    peerUtil.destroyPeer();
     this.$socket.client.emit('leave', this.roomName);
+    peerUtil.destroyPeer();
   },
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),

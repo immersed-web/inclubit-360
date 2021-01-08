@@ -5,8 +5,8 @@ export default {
   state: {
     roomName: 'defaultRoom',
     roomMembers: [],
+    socketConnectionState: '',
     serverUrl: '',
-    // socketConnectionState: '',
     peerConnectionState: 'disconnected',
   },
   getters: {
