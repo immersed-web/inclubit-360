@@ -72,7 +72,7 @@
           high="0.8"
           max="1"
         />
-        <q-btn class="q-mr-md " icon="mic_off" />
+        <q-btn class="q-mr-md " :icon="localStreamEnabled? 'mic': 'mic_off'" @click="toggleMicrophone" />
         <q-btn id="enter-vr" class="text-no-wrap" color="accent" label="enter VR" />
         <q-separator class="q-mx-lg" vertical inset />
         <q-btn class="q-px-sm" color="negative" icon="call_end" @click="endCall" />
@@ -95,7 +95,7 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import peerUtil from 'js/peer-utils';
+import peerUtil, { toggleMute } from 'js/peer-utils';
 import DebugInfo from 'components/DebugInfo.vue';
 import { attachRMSCallback, createRMSMeter } from 'js/audio-utils';
 // import sceneUtils from 'js/scene-utils';
@@ -107,6 +107,7 @@ export default {
   data () {
     return {
       localStream: null,
+      localStreamEnabled: true,
       remoteStream: null,
       outChatMessage: '',
       inChatMessage: '',
@@ -138,7 +139,7 @@ export default {
       console.log('roomready changed to:', newValue);
       console.log('connectionState:', this.peerConnectionState);
       if (newValue && this.peerConnectionState !== 'connected') {
-        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose, this.localStream);
       }
     },
   },
@@ -187,7 +188,11 @@ export default {
     peerUtil.destroyPeer();
   },
   methods: {
-    ...mapMutations(['deviceSettings/setChosenVideoDeviceId', 'deviceSettings/setChosenAudioInDeviceId', 'deviceSettings/setChosenAudioOutDeviceId']),
+    ...mapMutations({
+      setChosenVideoDeviceId: 'deviceSettings/setChosenVideoDeviceId',
+      setChosenAudioInDeviceId: 'deviceSettings/setChosenAudioInDeviceId',
+      setChosenAudioOutDeviceId: 'deviceSettings/setChosenAudioOutDeviceId',
+    }),
     ...mapActions(['deviceSettings/saveChosenDevicesToStorage']),
     onSignal (d) {
       console.log('signal triggered from peer obj:', d);
@@ -224,6 +229,13 @@ export default {
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
       this.outChatMessage = '';
+    },
+    toggleMicrophone () {
+      this.localStreamEnabled = !this.localStreamEnabled;
+      if (this.localStream) {
+        this.localStream.getAudioTracks()[0].enabled = this.localStreamEnabled;
+      }
+      // toggleMute();
     },
     endCall () {
       this.$router.replace('/');

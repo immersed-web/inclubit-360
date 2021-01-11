@@ -145,6 +145,10 @@ export function setPeerOutputStream (stream) {
   }
 }
 
+// export function toggleMute () {
+//   console.log(peerConnection);
+// }
+
 export async function populateAvailableMediaDevices () {
   const devices = await navigator.mediaDevices.enumerateDevices();
   store.commit('deviceSettings/setAvailableMediaDevices', devices);

@@ -11,6 +11,7 @@
         autoplay
         muted
       />
+      <audio ref="remoteAudio" autoplay />
     </div>
     <q-toolbar>
       <q-toolbar-title class="q-mr-xl" shrink>
@@ -196,7 +197,8 @@ export default {
       console.log('start was called');
     },
     onStream (stream) {
-      this.$refs.remoteVideo.srcObject = stream;
+      console.log('received remote stream!!!', stream);
+      this.$refs.remoteAudio.srcObject = stream;
     },
     onMessage (data) {
       console.log('received message', data);

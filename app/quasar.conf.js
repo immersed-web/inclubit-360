@@ -99,7 +99,7 @@ module.exports = function (/* ctx */) {
       https: false,
       port: 8080,
       open: true, // opens browser window automatically
-      vueDevtools: true,
+      vueDevtools: false,
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
