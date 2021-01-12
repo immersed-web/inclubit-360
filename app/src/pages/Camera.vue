@@ -13,7 +13,7 @@
       />
       <audio ref="remoteAudio" autoplay />
     </div>
-    <q-toolbar>
+    <q-toolbar class="bg-dark">
       <q-toolbar-title class="q-mr-xl" shrink>
         {{ roomName }}
       </q-toolbar-title>
@@ -70,7 +70,7 @@
         </template>
       </q-select>
 
-      <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="mediaDeviceChanged" />
+      <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="onMediaDeviceSelected" />
       <!-- </div> -->
       <q-space />
       <q-separator spaced vertical inset />
@@ -166,22 +166,24 @@ export default {
   async mounted () {
     try {
       // await peerUtil.populateAvailableMediaDevices();
-      const videoConstraints = {
-        deviceId: this.videoDeviceId,
-      };
-      const audioConstraints = {
-        deviceId: this.audioInDeviceId,
-      };
-      this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
-      this.$refs.mainVideo.srcObject = this.localStream;
+      // const videoConstraints = {
+      //   deviceId: this.videoDeviceId,
+      // };
+      // const audioConstraints = {
+      //   deviceId: this.audioInDeviceId,
+      // };
+      // this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
+      // this.$refs.mainVideo.srcObject = this.localStream;
+      await this.requestMediaDevices();
 
       this.videoTrackSettings = this.localStream.getVideoTracks()[0].getSettings();
     } catch (e) {
       console.error(e);
     }
     console.log('creating peer with streamobject: ', this.localStream);
-    await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
-    this.$socket.client.emit('peerObjectCreated');
+    // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
+    // this.$socket.client.emit('peerObjectCreated');
+    await this.createPeer();
     this.$socket.client.emit('join', this.roomName);
 
     console.log(this.availableVideoDevices);
@@ -196,6 +198,10 @@ export default {
     async start () {
       console.log('start was called');
     },
+    async createPeer () {
+      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onMessage, this.onClose, this.localStream);
+      this.$socket.client.emit('peerObjectCreated');
+    },
     onStream (stream) {
       console.log('received remote stream!!!', stream);
       this.$refs.remoteAudio.srcObject = stream;
@@ -205,8 +211,8 @@ export default {
       this.inChatMessage = data;
     },
     async onClose () {
-      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
-      this.$socket.client.emit('peerObjectCreated');
+      // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onMessage, this.onClose, this.localStream);
+      this.createPeer();
     },
     endCall () {
       // peerUtil.destroyPeer();
@@ -216,8 +222,7 @@ export default {
       peerUtil.sendMessage(this.outChatMessage);
       this.outChatMessage = '';
     },
-    async mediaDeviceChanged () {
-      this.devicesChanged = false;
+    async requestMediaDevices () {
       const videoId = this.videoDeviceId;
       const videoConstraint = videoId ? { deviceId: videoId } : true;
       // videoConstraint.frameRate = 15;
@@ -226,7 +231,6 @@ export default {
       const audioId = this.audioInDeviceId;
       const audioConstraint = audioId ? { deviceId: audioId } : true;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
-      this.saveChosenDevicesToStorage();
 
       // const videoTrack = this.localStream.getVideoTracks()[0];
       // const capabilities = videoTrack.getCapabilities();
@@ -234,7 +238,29 @@ export default {
       // console.log('settings', videoTrack.getSettings());
 
       this.$refs.mainVideo.srcObject = this.localStream;
+    },
+    async onMediaDeviceSelected () {
+      this.devicesChanged = false;
+      await this.requestMediaDevices();
+      this.saveChosenDevicesToStorage();
       peerUtil.setPeerOutputStream(this.localStream);
+      // const videoId = this.videoDeviceId;
+      // const videoConstraint = videoId ? { deviceId: videoId } : true;
+      // // videoConstraint.frameRate = 15;
+      // // videoConstraint.width = 3840;
+      // // videoConstraint.height = 1920;
+      // const audioId = this.audioInDeviceId;
+      // const audioConstraint = audioId ? { deviceId: audioId } : true;
+      // this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
+      // this.saveChosenDevicesToStorage();
+
+      // // const videoTrack = this.localStream.getVideoTracks()[0];
+      // // const capabilities = videoTrack.getCapabilities();
+      // // console.log('capabilities: ', capabilities);
+      // // console.log('settings', videoTrack.getSettings());
+
+      // this.$refs.mainVideo.srcObject = this.localStream;
+      // peerUtil.setPeerOutputStream(this.localStream);
     },
     switchVideoThumbnailVideo () {
       // TODO: Implement that srcobject switch place between videtags instread of switch css class!

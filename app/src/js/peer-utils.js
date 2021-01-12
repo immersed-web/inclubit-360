@@ -20,7 +20,7 @@ MediaDevices.ondevicechange = () => {
  * @param  { Function } [onClose]
  * @param  { MediaStream } [stream]
  */
-export async function createPeer (initiator, onSignal, onStream, onMessage, onClose, stream) {
+export async function createPeer (initiator, onSignal, onStream, onTrack, onMessage, onClose, stream) {
   console.log('createPeer called with params:', arguments);
   // restartTime = _restartTime;
   store.commit('connectionSettings/setPeerConnectionState', initiator ? 'connecting' : 'waiting');
@@ -64,6 +64,12 @@ export async function createPeer (initiator, onSignal, onStream, onMessage, onCl
     // this.$socket.client.emit('signal', data);
   });
 
+  peerConnection.on('track', (track, stream) => {
+    if (typeof onTrack !== 'function') { return; }
+    onTrack(track, stream);
+    // this.$socket.client.emit('signal', data);
+  });
+
   peerConnection.on('connect', () => {
     console.log('peer connected');
     store.commit('connectionSettings/setPeerConnectionState', 'connected');
@@ -87,8 +93,16 @@ export async function createPeer (initiator, onSignal, onStream, onMessage, onCl
     console.error('peer error: ', err);
   });
   peerConnection.on('stream', stream => {
+    console.log('onStream triggered!', stream);
+    // try {
+    //   const videoTrack = stream.getVideoTracks()[0];
+    //   const settings = videoTrack.getSettings();
+    //   console.log(settings);
+    // } catch (err) {
+    //   console.error(err);
+    // }
+
     onStream(stream);
-    // this.$refs.remoteVideo.srcObject = stream;
   });
 
   peerConnection.on('data', data => {
@@ -121,6 +135,10 @@ export function destroyPeer () {
 
 export function signalPeer (data) {
   if (peerConnection) peerConnection.signal(data);
+}
+
+export function testDataChannel () {
+  peerConnection.send('teeest data ove data channel');
 }
 
 export function sendMessage (chatMessage) {

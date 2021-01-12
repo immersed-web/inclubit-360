@@ -30,7 +30,7 @@
           emit-value
           map-options
           :value="audioInDeviceId"
-          @input="setChosenAudioInDeviceId($event); devicesChanged = true"
+          @input="setChosenAudioInDeviceId($event); onAudioDeviceSelected();"
         >
           <template v-slot:selected-item="scope">
             <span class="ellipsis">{{ scope.opt.label }}</span>
@@ -46,7 +46,7 @@
           emit-value
           map-options
           :value="audioOutDeviceId"
-          @input="setChosenAudioOutDeviceId($event); devicesChanged = true"
+          @input="setChosenAudioOutDeviceId($event); onAudioDeviceSelected();"
         >
           <template v-slot:selected-item="scope">
             <span class="ellipsis">{{ scope.opt.label }}</span>
@@ -72,6 +72,9 @@
           high="0.8"
           max="1"
         />
+
+        <q-btn label="test" @click="test" />
+
         <q-btn class="q-mr-md " :icon="localStreamEnabled? 'mic': 'mic_off'" @click="toggleMicrophone" />
         <q-btn id="enter-vr" class="text-no-wrap" color="accent" label="enter VR" />
         <q-separator class="q-mx-lg" vertical inset />
@@ -95,9 +98,9 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import peerUtil, { toggleMute } from 'js/peer-utils';
+import peerUtil, { testDataChannel } from 'js/peer-utils';
 import DebugInfo from 'components/DebugInfo.vue';
-import { attachRMSCallback, createRMSMeter } from 'js/audio-utils';
+import { attachRMSCallback, createRMSMeter, closeRMSMeter } from 'js/audio-utils';
 // import sceneUtils from 'js/scene-utils';
 export default {
   name: 'Viewer',
@@ -139,7 +142,7 @@ export default {
       console.log('roomready changed to:', newValue);
       console.log('connectionState:', this.peerConnectionState);
       if (newValue && this.peerConnectionState !== 'connected') {
-        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose, this.localStream);
+        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onTrack, this.onMessage, this.onClose, this.localStream);
       }
     },
   },
@@ -150,10 +153,6 @@ export default {
     room (data) {
       console.log('room event from socket', data);
     },
-    // readyToConnect () {
-    //   console.log('host is ready');
-    //   // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
-    // },
     roomFull (msg) {
       console.log('roomFull:', msg);
     },
@@ -166,17 +165,18 @@ export default {
     },
   },
   async mounted () {
-    const audioConstraints = {
-      deviceId: this.audioInDeviceId,
-    };
-    this.localStream = await peerUtil.getLocalMediaStream(false, audioConstraints);
-    console.log('localStream:', this.localStream);
-    await createRMSMeter(this.localStream);
-    attachRMSCallback(value => {
-      // console.log(value);
-      this.debugData.localVolume = value;
-    });
+    // const audioConstraints = {
+    //   deviceId: this.audioInDeviceId,
+    // };
+    // this.localStream = await peerUtil.getLocalMediaStream(false, audioConstraints);
+    // console.log('localStream:', this.localStream);
+    // await createRMSMeter(this.localStream);
+    // attachRMSCallback(value => {
+    //   // console.log(value);
+    //   this.debugData.localVolume = value;
+    // });
     // startRMS();
+    await this.requestAudioDevices();
     this.$socket.client.emit('join', this.roomName);
 
     // sceneUtils.initThreeScene(this.$refs.drawCanvas);
@@ -184,6 +184,7 @@ export default {
   },
   beforeDestroy () {
     console.log('destroying viewer component');
+    closeRMSMeter();
     this.$socket.client.emit('leave', this.roomName);
     peerUtil.destroyPeer();
   },
@@ -193,7 +194,10 @@ export default {
       setChosenAudioInDeviceId: 'deviceSettings/setChosenAudioInDeviceId',
       setChosenAudioOutDeviceId: 'deviceSettings/setChosenAudioOutDeviceId',
     }),
-    ...mapActions(['deviceSettings/saveChosenDevicesToStorage']),
+    ...mapActions({ saveChosenDevicesToStorage: 'deviceSettings/saveChosenDevicesToStorage' }),
+    test () {
+      testDataChannel();
+    },
     onSignal (d) {
       console.log('signal triggered from peer obj:', d);
       this.$socket.client.emit('signal', d);
@@ -217,8 +221,24 @@ export default {
         await this.$refs.remoteVideo.play();
       }
 
-      this.initVideoSphere(stream, this.$refs.remoteVideo);
+      this.initVideoSphere(this.$refs.remoteVideo);
       // sceneUtils.addSphereToScene(sceneUtils.videoToSphereMesh(this.$refs.remoteVideo));
+    },
+    onTrack (track, stream) {
+      console.log('received track!', track, stream);
+      if (track.kind !== 'video') {
+        return;
+      }
+
+      try {
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        this.debugData.videoWidth = settings.width;
+        this.debugData.videoHeight = settings.height;
+        console.log(settings);
+      } catch (err) {
+        console.error(err);
+      }
     },
     onMessage (data) {
       this.inChatMessage = data;
@@ -243,7 +263,23 @@ export default {
     remoteVideoStarted () {
       console.log('remotevideo started!');
     },
-    initVideoSphere (stream, videoElement) {
+    async onAudioDeviceSelected () {
+      await this.requestAudioDevices();
+      this.saveChosenDevicesToStorage();
+    },
+    async requestAudioDevices () {
+      const audioConstraints = {
+        deviceId: this.audioInDeviceId,
+      };
+      this.localStream = await peerUtil.getLocalMediaStream(false, audioConstraints);
+      console.log('localStream:', this.localStream);
+      await createRMSMeter(this.localStream);
+      attachRMSCallback(value => {
+      // console.log(value);
+        this.debugData.localVolume = value;
+      });
+    },
+    initVideoSphere (videoElement) {
       const sceneEl = document.querySelector('a-scene');
       // TODO: Check whether we need to remove and insert new sphere, or if it's enough to update src of existing one.
       const prevVSphere = sceneEl.querySelector('a-videosphere');
@@ -254,16 +290,6 @@ export default {
       // vSphere.setAttribute('srcObject', 'https://bitmovin.com/player-content/playhouse-vr/progressive.mp4');
       vSphere.setAttribute('src', '#remote-video');
       sceneEl.appendChild(vSphere);
-
-      // // update dimensions info
-      // const remoteVideo = document.querySelector('#remote-video');
-      // this.debugData.videoWidth = remoteVideo.videoWidth;
-      // this.debugData.videoHeight = remoteVideo.videoHeight;
-
-      const videoTrack = stream.getVideoTracks()[0];
-      const settings = videoTrack.getSettings();
-      this.debugData.videoWidth = settings.width;
-      this.debugData.videoHeight = settings.height;
     },
   },
 

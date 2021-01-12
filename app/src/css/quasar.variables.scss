@@ -33,8 +33,10 @@ $accent    : #9C27B0;
 
 $dark      : #393e46;
 
+$background: #222831;
+
 body.body--dark {
-  background: #222831;
+  background: $background;
 }
 
 $positive  : #21BA45;

@@ -22,13 +22,14 @@ export async function createRMSMeter (stream) {
 }
 
 export async function closeRMSMeter () {
-  if (audioCtx) {
+  if (audioCtx && audioCtx.state !== 'closed') {
     await audioCtx.close();
   }
 }
 
 export function attachRMSCallback (fn) {
   console.log(analyser.frequencyBinCount);
+  detachRMSCallback();
   function loop () {
     fn(getRMS());
     animationId = requestAnimationFrame(loop);
@@ -38,7 +39,9 @@ export function attachRMSCallback (fn) {
 }
 
 export function detachRMSCallback () {
-  cancelAnimationFrame(animationId);
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
   // clearTimeout(animationId);
 }
 
