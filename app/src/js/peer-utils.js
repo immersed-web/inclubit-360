@@ -16,11 +16,12 @@ MediaDevices.ondevicechange = () => {
  * @param  { Boolean } initiator
  * @param  { Function } onSignal
  * @param  { Function } onStream
- * @param  { Function } onMessage
+ * @param  { Function } onTrack
+ * @param  { Function } onData
  * @param  { Function } [onClose]
  * @param  { MediaStream } [stream]
  */
-export async function createPeer (initiator, onSignal, onStream, onTrack, onMessage, onClose, stream) {
+export async function createPeer (initiator, onSignal, onStream, onTrack, onData, onClose, stream) {
   console.log('createPeer called with params:', arguments);
   // restartTime = _restartTime;
   store.commit('connectionSettings/setPeerConnectionState', initiator ? 'connecting' : 'waiting');
@@ -47,15 +48,16 @@ export async function createPeer (initiator, onSignal, onStream, onTrack, onMess
     peerOpts.stream = stream;
   }
   peerConnection = new Peer(peerOpts);
-  channel = peerConnection._pc.createDataChannel('chat', { negotiated: true, id: 1001 });
+  channel = peerConnection._pc.createDataChannel('datachannel', { negotiated: true, id: 1001 });
   mediaStream = stream;
 
   console.log('peer util stream obj:', mediaStream);
 
   channel.onmessage = (event) => {
-    console.log('chatMessage', event.data);
+    console.log('data received:', event);
     // this.receivedMessages.push(event.data);
-    onMessage(event.data);
+    const msg = JSON.parse(event.data);
+    onData(msg.type, msg.data);
   };
 
   console.log('created a peer object', peerConnection);
@@ -143,9 +145,19 @@ export function testDataChannel () {
 
 export function sendMessage (chatMessage) {
   console.log('sending message');
+  // try {
+  //   // peerConnection.send(this.chatMessage);
+  //   channel.send(chatMessage);
+  // } catch (err) {
+  //   console.error(err);
+  // }
+  sendData('message', chatMessage);
+}
+
+export function sendData (type, data) {
+  console.log('sending data');
   try {
-    // peerConnection.send(this.chatMessage);
-    channel.send(chatMessage);
+    channel.send(JSON.stringify({ type, data }));
   } catch (err) {
     console.error(err);
   }
@@ -203,6 +215,7 @@ export default {
   createPeer,
   destroyPeer,
   signalPeer,
+  sendData,
   sendMessage,
   getLocalMediaStream,
   setPeerOutputStream,

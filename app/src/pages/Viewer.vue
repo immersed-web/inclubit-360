@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div id="overlay-container" class="column no-wrap">
-      <DebugInfo :debug-data="debugData" />
+      <DebugInfo :debug-data="{...debugData, remoteIsMuted: !remoteStreamEnabled}" />
       <div class="col-grow">
         <a-scene embedded vr-mode-ui="enterVRButton: #enter-vr">
           <a-camera look-controls-enabled wasd-controls-enabled="false" />
@@ -15,7 +15,7 @@
       /> -->
         </a-scene>
       </div>
-      <q-toolbar class="bg-dark">
+      <q-toolbar class="">
         <q-toolbar-title class="q-mr-md" shrink>
           {{ roomName }}
         </q-toolbar-title>
@@ -64,6 +64,12 @@
           high="-1"
           max="0"
         /> -->
+        <q-btn :icon="remoteStreamEnabled? 'volume_up': 'volume_off'" @click="remoteToggleMute">
+          <q-tooltip content-class="bg-accent">
+            mute/unmute peer
+          </q-tooltip>
+        </q-btn>
+
         <meter
           class="vertical-meter"
           :value="debugData.localVolume"
@@ -72,10 +78,15 @@
           high="0.8"
           max="1"
         />
-
-        <q-btn label="test" @click="test" />
-
-        <q-btn class="q-mr-md " :icon="localStreamEnabled? 'mic': 'mic_off'" @click="toggleMicrophone" />
+        <q-btn>
+          <mic-icon />
+        </q-btn>
+        <q-btn class="q-mr-md meter-button" :icon="localStreamEnabled? 'mic': 'mic_off'" @click="toggleMicrophone">
+          <div class="custom-meter" />
+          <q-tooltip content-class="bg-accent">
+            mic on/off
+          </q-tooltip>
+        </q-btn>
         <q-btn id="enter-vr" class="text-no-wrap" color="accent" label="enter VR" />
         <q-separator class="q-mx-lg" vertical inset />
         <q-btn class="q-px-sm" color="negative" icon="call_end" @click="endCall" />
@@ -98,20 +109,23 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import peerUtil, { testDataChannel } from 'js/peer-utils';
+import peerUtil from 'js/peer-utils';
 import DebugInfo from 'components/DebugInfo.vue';
 import { attachRMSCallback, createRMSMeter, closeRMSMeter } from 'js/audio-utils';
+import MicIcon from 'src/components/MicIcon.vue';
 // import sceneUtils from 'js/scene-utils';
 export default {
   name: 'Viewer',
   components: {
     DebugInfo,
+    MicIcon,
   },
   data () {
     return {
       localStream: null,
       localStreamEnabled: true,
       remoteStream: null,
+      remoteStreamEnabled: true,
       outChatMessage: '',
       inChatMessage: '',
       debugData: {
@@ -136,13 +150,24 @@ export default {
       availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
       availableAudioOutDevices: 'deviceSettings/availableAudioOutDevices',
     }),
+    // /** @return { boolean } */
+    // remoteIsMuted () {
+    //   try {
+    //     console.log('REVALUATING REMOTE MUTED');
+    //     const audioTrack = this.remoteStream.getAudioTracks()[0];
+    //     return audioTrack.enabled;
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    //   return false;
+    // },
   },
   watch: {
     roomReady (newValue, oldValue) {
       console.log('roomready changed to:', newValue);
       console.log('connectionState:', this.peerConnectionState);
       if (newValue && this.peerConnectionState !== 'connected') {
-        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onTrack, this.onMessage, this.onClose, this.localStream);
+        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onTrack, this.onData, this.onClose, this.localStream);
       }
     },
   },
@@ -195,8 +220,8 @@ export default {
       setChosenAudioOutDeviceId: 'deviceSettings/setChosenAudioOutDeviceId',
     }),
     ...mapActions({ saveChosenDevicesToStorage: 'deviceSettings/saveChosenDevicesToStorage' }),
-    test () {
-      testDataChannel();
+    remoteToggleMute () {
+      peerUtil.sendData('setMuteState', this.remoteStreamEnabled);
     },
     onSignal (d) {
       console.log('signal triggered from peer obj:', d);
@@ -240,20 +265,27 @@ export default {
         console.error(err);
       }
     },
-    onMessage (data) {
-      this.inChatMessage = data;
+    onData (type, data) {
+      // this.inChatMessage = data;
+      if (type === 'muteState') {
+        this.remoteStreamEnabled = !data;
+      }
     },
     onClose () {
-      // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+      // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onData, this.onClose);
     },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
       this.outChatMessage = '';
     },
+    sendData (type, data) {
+      peerUtil.sendData(type, data);
+    },
     toggleMicrophone () {
       this.localStreamEnabled = !this.localStreamEnabled;
       if (this.localStream) {
         this.localStream.getAudioTracks()[0].enabled = this.localStreamEnabled;
+        this.sendData('muteState', !this.localStreamEnabled);
       }
       // toggleMute();
     },
@@ -320,6 +352,8 @@ export default {
   * {
     pointer-events: auto;
   }
+
+  background-image: url('https://static-cse.canva.com/blob/142356/removing-background-images_Unsplash.8b2a58cb.jpeg');
 }
 
 #remote-video {
@@ -350,6 +384,25 @@ export default {
   // overflow: hidden;
   // text-overflow: ellipsis;
   // width: 20%;
+}
+
+// .meter-button i {
+//   mix-blend-mode: screen;
+// }
+
+.custom-meter {
+  // z-index: -1;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: bottom center;
+  transform:
+    scaleY(20);
+  background-color: rgb(117, 255, 117);
+  // font-size: 2rem;
+  // color: green;
+  mix-blend-mode: exclusion;
 }
 
 .vertical-meter {

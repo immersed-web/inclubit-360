@@ -73,6 +73,8 @@
       <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="onMediaDeviceSelected" />
       <!-- </div> -->
       <q-space />
+
+      <q-btn class="q-mr-md " :icon="localStreamEnabled? 'mic': 'mic_off'" @click="setMicrophoneEnable(!localStreamEnabled)" />
       <q-separator spaced vertical inset />
       <q-btn class="q-px-sm" color="negative" icon="call_end" @click="endCall" />
     </q-toolbar>
@@ -111,6 +113,7 @@ export default {
     return {
       // localVideoIsBig: false,
       localStream: null,
+      localStreamEnabled: true,
       videoTrackSettings: null,
       // inChatMessage: 'message',
       // outChatMessage: '',
@@ -140,7 +143,7 @@ export default {
     //   console.log('roomready changed to:', newValue);
     //   console.log('connectionState:', this.peerConnectionState);
     //   if (newValue && this.peerConnectionState !== 'connected') {
-    //     await peerUtil.createPeer(true, this.onSignal, this.onStream, this.onMessage, this.onClose);
+    //     await peerUtil.createPeer(true, this.onSignal, this.onStream, this.onData, this.onClose);
     //     this.$socket.client.emit('peerObjectCreated');
     //   }
     // },
@@ -181,7 +184,7 @@ export default {
       console.error(e);
     }
     console.log('creating peer with streamobject: ', this.localStream);
-    // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onMessage, this.onClose, this.localStream);
+    // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onData, this.onClose, this.localStream);
     // this.$socket.client.emit('peerObjectCreated');
     await this.createPeer();
     this.$socket.client.emit('join', this.roomName);
@@ -199,28 +202,38 @@ export default {
       console.log('start was called');
     },
     async createPeer () {
-      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onMessage, this.onClose, this.localStream);
+      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
       this.$socket.client.emit('peerObjectCreated');
     },
     onStream (stream) {
       console.log('received remote stream!!!', stream);
       this.$refs.remoteAudio.srcObject = stream;
     },
-    onMessage (data) {
-      console.log('received message', data);
-      this.inChatMessage = data;
+    onData (type, data) {
+      console.log('received data', type, data);
+      if (type === 'setMuteState') {
+        this.setMicrophoneEnable(!data);
+      }
+      // this.inChatMessage = data;
     },
     async onClose () {
-      // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onMessage, this.onClose, this.localStream);
+      // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
       this.createPeer();
+    },
+    setMicrophoneEnable (isEnabled) {
+      this.localStreamEnabled = isEnabled;
+      if (this.localStream) {
+        this.localStream.getAudioTracks()[0].enabled = this.localStreamEnabled;
+        this.sendData('muteState', !this.localStreamEnabled);
+      }
+      // toggleMute();
     },
     endCall () {
       // peerUtil.destroyPeer();
       this.$router.replace('/');
     },
-    sendMessage () {
-      peerUtil.sendMessage(this.outChatMessage);
-      this.outChatMessage = '';
+    sendData (type, data) {
+      peerUtil.sendData(type, data);
     },
     async requestMediaDevices () {
       const videoId = this.videoDeviceId;
@@ -261,9 +274,6 @@ export default {
 
       // this.$refs.mainVideo.srcObject = this.localStream;
       // peerUtil.setPeerOutputStream(this.localStream);
-    },
-    switchVideoThumbnailVideo () {
-      // TODO: Implement that srcobject switch place between videtags instread of switch css class!
     },
   },
 };
