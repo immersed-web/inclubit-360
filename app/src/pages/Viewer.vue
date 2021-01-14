@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div id="overlay-container" class="column no-wrap">
-      <DebugInfo :debug-data="{...debugData, remoteIsMuted: !remoteStreamEnabled}" />
+      <DebugInfo :debug-data="{...debugData, remoteIsMuted: !remoteMicEnabled}" />
       <div class="col-grow">
         <a-scene embedded vr-mode-ui="enterVRButton: #enter-vr">
           <a-camera look-controls-enabled wasd-controls-enabled="false" />
@@ -64,25 +64,17 @@
           high="-1"
           max="0"
         /> -->
-        <q-btn :icon="remoteStreamEnabled? 'volume_up': 'volume_off'" @click="remoteToggleMute">
+
+        <q-btn :disable="!peerIsConnected" color="dark" class="q-mr-sm" @click="remoteToggleMic">
+          <audio-icon v-show="remoteMicEnabled" ref="speakerIcon" icon="speaker" />
+          <q-icon v-show="!remoteMicEnabled" name="volume_off" />
           <q-tooltip content-class="bg-accent">
             mute/unmute peer
           </q-tooltip>
         </q-btn>
-
-        <meter
-          class="vertical-meter"
-          :value="debugData.localVolume"
-          min="0"
-          low="0.2"
-          high="0.8"
-          max="1"
-        />
-        <q-btn>
-          <mic-icon />
-        </q-btn>
-        <q-btn class="q-mr-md meter-button" :icon="localStreamEnabled? 'mic': 'mic_off'" @click="toggleMicrophone">
-          <div class="custom-meter" />
+        <q-btn color="dark" class="q-mr-md meter-button" @click="setMicrophoneEnable(!localMicEnabled)">
+          <audio-icon v-show="localMicEnabled" ref="micIcon" />
+          <q-icon v-show="!localMicEnabled" name="mic_off" />
           <q-tooltip content-class="bg-accent">
             mic on/off
           </q-tooltip>
@@ -112,20 +104,20 @@ import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import peerUtil from 'js/peer-utils';
 import DebugInfo from 'components/DebugInfo.vue';
 import { attachRMSCallback, createRMSMeter, closeRMSMeter } from 'js/audio-utils';
-import MicIcon from 'src/components/MicIcon.vue';
+import AudioIcon from 'src/components/AudioIcon.vue';
 // import sceneUtils from 'js/scene-utils';
 export default {
   name: 'Viewer',
   components: {
     DebugInfo,
-    MicIcon,
+    AudioIcon,
   },
   data () {
     return {
       localStream: null,
-      localStreamEnabled: true,
+      localMicEnabled: true,
       remoteStream: null,
-      remoteStreamEnabled: true,
+      remoteMicEnabled: true,
       outChatMessage: '',
       inChatMessage: '',
       debugData: {
@@ -149,6 +141,7 @@ export default {
       roomReady: 'connectionSettings/roomIsPopulated',
       availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
       availableAudioOutDevices: 'deviceSettings/availableAudioOutDevices',
+      peerIsConnected: 'connectionSettings/peerIsConnected',
     }),
     // /** @return { boolean } */
     // remoteIsMuted () {
@@ -167,7 +160,7 @@ export default {
       console.log('roomready changed to:', newValue);
       console.log('connectionState:', this.peerConnectionState);
       if (newValue && this.peerConnectionState !== 'connected') {
-        peerUtil.createPeer(true, this.onSignal, this.onStream, this.onTrack, this.onData, this.onClose, this.localStream);
+        peerUtil.createPeer(true, this.onConnect, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onTrack, this.onData, this.onClose, this.localStream);
       }
     },
   },
@@ -220,12 +213,8 @@ export default {
       setChosenAudioOutDeviceId: 'deviceSettings/setChosenAudioOutDeviceId',
     }),
     ...mapActions({ saveChosenDevicesToStorage: 'deviceSettings/saveChosenDevicesToStorage' }),
-    remoteToggleMute () {
-      peerUtil.sendData('setMuteState', this.remoteStreamEnabled);
-    },
-    onSignal (d) {
-      console.log('signal triggered from peer obj:', d);
-      this.$socket.client.emit('signal', d);
+    onConnect () {
+      this.sendData('micEnabled', this.localMicEnabled);
     },
     async onStream (stream) {
       console.log('received remote stream!!!', stream);
@@ -267,12 +256,14 @@ export default {
     },
     onData (type, data) {
       // this.inChatMessage = data;
-      if (type === 'muteState') {
-        this.remoteStreamEnabled = !data;
+      if (type === 'micEnabled') {
+        this.remoteMicEnabled = data;
+      } else if (type === 'setMicEnabled') {
+        this.setMicrophoneEnable(data);
       }
     },
     onClose () {
-      // peerUtil.createPeer(true, this.onSignal, this.onStream, this.onData, this.onClose);
+      this.remoteStream = null;
     },
     sendMessage () {
       peerUtil.sendMessage(this.outChatMessage);
@@ -281,13 +272,16 @@ export default {
     sendData (type, data) {
       peerUtil.sendData(type, data);
     },
-    toggleMicrophone () {
-      this.localStreamEnabled = !this.localStreamEnabled;
+    setMicrophoneEnable (isEnabled) {
+      this.localMicEnabled = isEnabled;
       if (this.localStream) {
-        this.localStream.getAudioTracks()[0].enabled = this.localStreamEnabled;
-        this.sendData('muteState', !this.localStreamEnabled);
+        this.localStream.getAudioTracks()[0].enabled = this.localMicEnabled;
+        this.sendData('micEnabled', this.localMicEnabled);
       }
       // toggleMute();
+    },
+    remoteToggleMic () {
+      peerUtil.sendData('setMicEnabled', !this.remoteMicEnabled);
     },
     endCall () {
       this.$router.replace('/');
@@ -298,6 +292,8 @@ export default {
     async onAudioDeviceSelected () {
       await this.requestAudioDevices();
       this.saveChosenDevicesToStorage();
+      this.setMicrophoneEnable(this.localMicEnabled); // If we get new stream we need to re apply mute setting
+      peerUtil.setPeerOutputStream(this.localStream);
     },
     async requestAudioDevices () {
       const audioConstraints = {
@@ -308,7 +304,8 @@ export default {
       await createRMSMeter(this.localStream);
       attachRMSCallback(value => {
       // console.log(value);
-        this.debugData.localVolume = value;
+        this.$refs.micIcon.setMeterHeight(value * 1.4);
+        // this.debugData.localVolume = value;
       });
     },
     initVideoSphere (videoElement) {
@@ -353,7 +350,7 @@ export default {
     pointer-events: auto;
   }
 
-  background-image: url('https://static-cse.canva.com/blob/142356/removing-background-images_Unsplash.8b2a58cb.jpeg');
+  // background-image: url('https://static-cse.canva.com/blob/142356/removing-background-images_Unsplash.8b2a58cb.jpeg');
 }
 
 #remote-video {
@@ -398,7 +395,7 @@ export default {
   height: 100%;
   transform-origin: bottom center;
   transform:
-    scaleY(20);
+    scaleY(0.5);
   background-color: rgb(117, 255, 117);
   // font-size: 2rem;
   // color: green;

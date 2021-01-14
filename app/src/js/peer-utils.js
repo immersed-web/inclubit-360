@@ -14,6 +14,7 @@ MediaDevices.ondevicechange = () => {
 
 /**
  * @param  { Boolean } initiator
+ * @param  { Function } onConnect
  * @param  { Function } onSignal
  * @param  { Function } onStream
  * @param  { Function } onTrack
@@ -21,7 +22,7 @@ MediaDevices.ondevicechange = () => {
  * @param  { Function } [onClose]
  * @param  { MediaStream } [stream]
  */
-export async function createPeer (initiator, onSignal, onStream, onTrack, onData, onClose, stream) {
+export async function createPeer (initiator, onConnect, onSignal, onStream, onTrack, onData, onClose, stream) {
   console.log('createPeer called with params:', arguments);
   // restartTime = _restartTime;
   store.commit('connectionSettings/setPeerConnectionState', initiator ? 'connecting' : 'waiting');
@@ -54,9 +55,9 @@ export async function createPeer (initiator, onSignal, onStream, onTrack, onData
   console.log('peer util stream obj:', mediaStream);
 
   channel.onmessage = (event) => {
-    console.log('data received:', event);
     // this.receivedMessages.push(event.data);
     const msg = JSON.parse(event.data);
+    console.log('data received:', msg.type, msg.data);
     onData(msg.type, msg.data);
   };
 
@@ -75,6 +76,7 @@ export async function createPeer (initiator, onSignal, onStream, onTrack, onData
   peerConnection.on('connect', () => {
     console.log('peer connected');
     store.commit('connectionSettings/setPeerConnectionState', 'connected');
+    onConnect();
   });
 
   peerConnection.on('close', () => {
@@ -155,7 +157,7 @@ export function sendMessage (chatMessage) {
 }
 
 export function sendData (type, data) {
-  console.log('sending data');
+  console.log('sending data', type, data);
   try {
     channel.send(JSON.stringify({ type, data }));
   } catch (err) {

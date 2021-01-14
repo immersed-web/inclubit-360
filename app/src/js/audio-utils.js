@@ -7,11 +7,12 @@ let buffer;
 
 let animationId;
 
+// TODO: Make this NOT a singleton so we can reuse it several times
 export async function createRMSMeter (stream) {
   await closeRMSMeter();
   audioCtx = new AudioContext();
   analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
+  analyser.fftSize = 512; // 2048;
 
   const bufferLength = analyser.frequencyBinCount;
 
@@ -23,12 +24,13 @@ export async function createRMSMeter (stream) {
 
 export async function closeRMSMeter () {
   if (audioCtx && audioCtx.state !== 'closed') {
+    detachRMSCallback();
     await audioCtx.close();
   }
 }
 
 export function attachRMSCallback (fn) {
-  console.log(analyser.frequencyBinCount);
+  console.log('attaching RMS Callback');
   detachRMSCallback();
   function loop () {
     fn(getRMS());

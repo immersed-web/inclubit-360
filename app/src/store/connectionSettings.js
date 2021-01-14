@@ -25,6 +25,9 @@ export default {
       }
       return true;
     },
+    peerIsConnected (state) {
+      return state.peerConnectionState === 'connected';
+    },
   },
   mutations: {
     setRoomName (state, payload) {

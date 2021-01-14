@@ -13,7 +13,7 @@
       />
       <audio ref="remoteAudio" autoplay />
     </div>
-    <q-toolbar class="bg-dark">
+    <q-toolbar class="">
       <q-toolbar-title class="q-mr-xl" shrink>
         {{ roomName }}
       </q-toolbar-title>
@@ -73,8 +73,20 @@
       <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="onMediaDeviceSelected" />
       <!-- </div> -->
       <q-space />
-
-      <q-btn class="q-mr-md " :icon="localStreamEnabled? 'mic': 'mic_off'" @click="setMicrophoneEnable(!localStreamEnabled)" />
+      <q-btn :disable="!peerIsConnected" color="dark" class="q-mr-sm" @click="remoteToggleMic">
+        <audio-icon v-show="remoteMicEnabled" ref="speakerIcon" icon="speaker" />
+        <q-icon v-show="!remoteMicEnabled" name="volume_off" />
+        <q-tooltip content-class="bg-accent">
+          mute/unmute peer
+        </q-tooltip>
+      </q-btn>
+      <q-btn color="dark" class="q-mr-md " @click="setMicrophoneEnabled(!localMicEnabled)">
+        <audio-icon v-show="localMicEnabled" ref="micIcon" icon="mic" />
+        <q-icon v-show="!localMicEnabled" name="mic_off" />
+        <q-tooltip content-class="bg-accent">
+          mic on/off
+        </q-tooltip>
+      </q-btn>
       <q-separator spaced vertical inset />
       <q-btn class="q-px-sm" color="negative" icon="call_end" @click="endCall" />
     </q-toolbar>
@@ -104,16 +116,21 @@
 import { mapState, mapGetters, createNamespacedHelpers } from 'vuex';
 const { mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
 import peerUtil from 'js/peer-utils';
+import { createRMSMeter, attachRMSCallback } from 'js/audio-utils';
+import AudioIcon from 'src/components/AudioIcon.vue';
 
 export default {
   name: 'Camera',
   components: {
+    AudioIcon,
   },
   data () {
     return {
       // localVideoIsBig: false,
       localStream: null,
-      localStreamEnabled: true,
+      localMicEnabled: true,
+      remoteStream: null,
+      remoteMicEnabled: true,
       videoTrackSettings: null,
       // inChatMessage: 'message',
       // outChatMessage: '',
@@ -136,17 +153,8 @@ export default {
       availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
       availableAudioOutDevices: 'deviceSettings/availableAudioOutDevices',
       roomPopulated: 'connectionSettings/roomIsPopulated',
+      peerIsConnected: 'connectionSettings/peerIsConnected',
     }),
-  },
-  watch: {
-    //  (newValue, oldValue) {
-    //   console.log('roomready changed to:', newValue);
-    //   console.log('connectionState:', this.peerConnectionState);
-    //   if (newValue && this.peerConnectionState !== 'connected') {
-    //     await peerUtil.createPeer(true, this.onSignal, this.onStream, this.onData, this.onClose);
-    //     this.$socket.client.emit('peerObjectCreated');
-    //   }
-    // },
   },
   sockets: {
     connect (data) {
@@ -198,35 +206,48 @@ export default {
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapActions(['saveChosenDevicesToStorage']),
-    async start () {
-      console.log('start was called');
-    },
     async createPeer () {
-      await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
+      await peerUtil.createPeer(false, this.onConnect, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
       this.$socket.client.emit('peerObjectCreated');
     },
-    onStream (stream) {
+    onConnect () {
+      this.sendData('micEnabled', this.localMicEnabled);
+    },
+    async onStream (stream) {
       console.log('received remote stream!!!', stream);
+      this.remoteStream = stream;
       this.$refs.remoteAudio.srcObject = stream;
+
+      await createRMSMeter(this.remoteStream);
+      attachRMSCallback(value => {
+      // console.log(value);
+        this.$refs.speakerIcon.setMeterHeight(value * 1.4);
+        // this.debugData.localVolume = value;
+      });
     },
     onData (type, data) {
-      console.log('received data', type, data);
-      if (type === 'setMuteState') {
-        this.setMicrophoneEnable(!data);
+      if (type === 'micEnabled') {
+        this.remoteMicEnabled = data;
+      } else if (type === 'setMicEnabled') {
+        this.setMicrophoneEnabled(data);
       }
       // this.inChatMessage = data;
     },
     async onClose () {
       // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
+      this.remoteStream = null;
       this.createPeer();
     },
-    setMicrophoneEnable (isEnabled) {
-      this.localStreamEnabled = isEnabled;
+    setMicrophoneEnabled (isEnabled) {
+      this.localMicEnabled = isEnabled;
       if (this.localStream) {
-        this.localStream.getAudioTracks()[0].enabled = this.localStreamEnabled;
-        this.sendData('muteState', !this.localStreamEnabled);
+        this.localStream.getAudioTracks()[0].enabled = this.localMicEnabled;
+        this.sendData('micEnabled', this.localMicEnabled);
       }
       // toggleMute();
+    },
+    remoteToggleMic () {
+      peerUtil.sendData('setMicEnabled', !this.remoteMicEnabled);
     },
     endCall () {
       // peerUtil.destroyPeer();
@@ -245,6 +266,13 @@ export default {
       const audioConstraint = audioId ? { deviceId: audioId } : true;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
 
+      await createRMSMeter(this.localStream);
+      attachRMSCallback(value => {
+      // console.log(value);
+        this.$refs.micIcon.setMeterHeight(value * 1.4);
+        // this.debugData.localVolume = value;
+      });
+
       // const videoTrack = this.localStream.getVideoTracks()[0];
       // const capabilities = videoTrack.getCapabilities();
       // console.log('capabilities: ', capabilities);
@@ -256,6 +284,7 @@ export default {
       this.devicesChanged = false;
       await this.requestMediaDevices();
       this.saveChosenDevicesToStorage();
+      this.setMicrophoneEnabled(this.localMicEnabled);
       peerUtil.setPeerOutputStream(this.localStream);
       // const videoId = this.videoDeviceId;
       // const videoConstraint = videoId ? { deviceId: videoId } : true;
