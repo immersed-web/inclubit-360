@@ -116,7 +116,10 @@
 import { mapState, mapGetters, createNamespacedHelpers } from 'vuex';
 const { mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
 import peerUtil from 'js/peer-utils';
-import { createRMSMeter, attachRMSCallback } from 'js/audio-utils';
+import audioAnalyzer from 'js/audio-utils';
+const micAnalyzer = audioAnalyzer();
+const speakerAnalyzer = audioAnalyzer();
+// import speakerAnalyzer from 'js/audio-utils';
 import AudioIcon from 'src/components/AudioIcon.vue';
 
 export default {
@@ -201,6 +204,8 @@ export default {
   },
   beforeDestroy () {
     this.$socket.client.emit('leave', this.roomName);
+    micAnalyzer.detachStream();
+    speakerAnalyzer.detachStream();
     peerUtil.destroyPeer();
   },
   methods: {
@@ -218,8 +223,8 @@ export default {
       this.remoteStream = stream;
       this.$refs.remoteAudio.srcObject = stream;
 
-      await createRMSMeter(this.remoteStream);
-      attachRMSCallback(value => {
+      await speakerAnalyzer.attachStream(this.remoteStream);
+      speakerAnalyzer.attachCallback(value => {
       // console.log(value);
         this.$refs.speakerIcon.setMeterHeight(value * 1.4);
         // this.debugData.localVolume = value;
@@ -266,8 +271,8 @@ export default {
       const audioConstraint = audioId ? { deviceId: audioId } : true;
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
 
-      await createRMSMeter(this.localStream);
-      attachRMSCallback(value => {
+      await micAnalyzer.attachStream(this.localStream);
+      micAnalyzer.attachCallback(value => {
       // console.log(value);
         this.$refs.micIcon.setMeterHeight(value * 1.4);
         // this.debugData.localVolume = value;

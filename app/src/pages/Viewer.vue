@@ -103,7 +103,10 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import peerUtil from 'js/peer-utils';
 import DebugInfo from 'components/DebugInfo.vue';
-import { attachRMSCallback, createRMSMeter, closeRMSMeter } from 'js/audio-utils';
+// import { attachRMSCallback, createRMSMeter, closeRMSMeter } from 'js/audio-utils';
+import audioAnalyzer from 'js/audio-utils';
+const micAnalyzer = audioAnalyzer();
+const speakerAnalyzer = audioAnalyzer();
 import AudioIcon from 'src/components/AudioIcon.vue';
 // import sceneUtils from 'js/scene-utils';
 export default {
@@ -202,7 +205,8 @@ export default {
   },
   beforeDestroy () {
     console.log('destroying viewer component');
-    closeRMSMeter();
+    micAnalyzer.detachStream();
+    speakerAnalyzer.detachStream();
     this.$socket.client.emit('leave', this.roomName);
     peerUtil.destroyPeer();
   },
@@ -227,6 +231,12 @@ export default {
 
       // document.querySelector("#antarctica").components.material.material.map.image.play();
       // this.$refs.videoSphereSource.components.material.material.map.image.play();
+
+      await speakerAnalyzer.attachStream(this.remoteStream);
+      speakerAnalyzer.attachCallback(value => {
+        this.$refs.speakerIcon.setMeterHeight(value * 1.4);
+      });
+
       try {
         await this.$refs.remoteVideo.play();
       } catch (err) {
@@ -301,8 +311,8 @@ export default {
       };
       this.localStream = await peerUtil.getLocalMediaStream(false, audioConstraints);
       console.log('localStream:', this.localStream);
-      await createRMSMeter(this.localStream);
-      attachRMSCallback(value => {
+      await micAnalyzer.attachStream(this.localStream);
+      micAnalyzer.attachCallback(value => {
       // console.log(value);
         this.$refs.micIcon.setMeterHeight(value * 1.4);
         // this.debugData.localVolume = value;
