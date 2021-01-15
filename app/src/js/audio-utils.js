@@ -31,7 +31,6 @@ function create () {
   // console.log(buffer);
   }
 
-  // TODO: Make this NOT a singleton so we can reuse it several times
   const attachStream = async stream => {
     await detachStream();
     audioCtx = new AudioContext();

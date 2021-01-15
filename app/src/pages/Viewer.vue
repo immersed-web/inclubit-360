@@ -377,13 +377,6 @@ export default {
   0 12.5px 10px rgba(0, 0, 0, 0.06)
 }
 
-// #enter-vr {
-//   position: fixed;
-//   top: 2rem;
-//   right: 2rem;
-
-// }
-
 .device-select-box {
   flex: 0 1 auto;
   width: 15rem;
@@ -391,30 +384,6 @@ export default {
   // overflow: hidden;
   // text-overflow: ellipsis;
   // width: 20%;
-}
-
-// .meter-button i {
-//   mix-blend-mode: screen;
-// }
-
-.custom-meter {
-  // z-index: -1;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  transform-origin: bottom center;
-  transform:
-    scaleY(0.5);
-  background-color: rgb(117, 255, 117);
-  // font-size: 2rem;
-  // color: green;
-  mix-blend-mode: exclusion;
-}
-
-.vertical-meter {
-  width: 36px; //TODO: could we somehow set a dynamic/automatic height?
-  transform: rotate(-90deg);
 }
 
 #chat-message {
