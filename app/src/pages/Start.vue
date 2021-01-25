@@ -53,13 +53,13 @@
         label="Titta på kameraström"
         @click="goToViewerPage"
       />
-      <q-btn
+      <!-- <q-btn
         color="primary"
         class="q-mx-xl"
         size="md"
         label="Skicka kameraström"
         @click="goToCameraPage"
-      />
+      /> -->
     </div>
     <q-page-sticky position="bottom-right" :offset="[40, 40]">
       <q-btn
