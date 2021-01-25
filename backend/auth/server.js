@@ -4,9 +4,11 @@ const express = require("express");
 const basicAuth = require('express-basic-auth');
 const fs = require('fs');
 const bodyParser = require('body-parser')
+const helmet = require('helmet');
 // const http = require("http").Server(app);
 
 let app = express();
+app.use(helmet());
 let adminRouter = express.Router();
 
 const PORT = process.env.PORT?process.env.PORT:3000;
