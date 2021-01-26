@@ -43,9 +43,6 @@ export default {
         password: '',
       },
       users: {
-        gunhaxxor: 'bajskorv',
-        megaman: 'cool factor',
-        butterflywigzor: 'fist fucker',
       },
     };
   },
