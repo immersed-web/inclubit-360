@@ -47,19 +47,21 @@
     </div>
     <div class="col-auto">
       <q-btn
+        v-if="isCamera"
+        color="primary"
+        class="q-mx-xl"
+        size="lg"
+        label="Skicka kameraström"
+        @click="goToCameraPage"
+      />
+      <q-btn
+        v-else
         color="primary"
         class="q-mx-xl"
         size="lg"
         label="Titta på kameraström"
         @click="goToViewerPage"
       />
-      <!-- <q-btn
-        color="primary"
-        class="q-mx-xl"
-        size="md"
-        label="Skicka kameraström"
-        @click="goToCameraPage"
-      /> -->
     </div>
     <q-page-sticky position="bottom-right" :offset="[40, 40]">
       <q-btn
@@ -83,6 +85,12 @@
 import { mapMutations, mapActions } from 'vuex';
 export default {
   name: 'Start',
+  props: {
+    isCamera: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data () {
     return {
       roomName: '',
@@ -138,7 +146,7 @@ export default {
       this.addRoomToRecent();
       this.setRoomNameInStore(this.roomName);
       this.saveConnSettingsToStorage();
-      this.$router.push('/camera');
+      this.$router.push('/camera/send');
     },
     goToViewerPage () {
       this.addRoomToRecent();

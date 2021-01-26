@@ -17,7 +17,8 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: 'camera', component: () => import('pages/Start.vue') },
+      { path: 'camera', component: () => import('pages/Start.vue'), props: { isCamera: true } },
+      { path: 'kamera', redirect: 'camera' },
       { name: 'Camera View', meta: { label: 'Camera View' }, path: 'camera/send', component: () => import('pages/Camera.vue') },
     ],
   },
