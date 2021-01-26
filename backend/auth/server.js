@@ -1,6 +1,7 @@
 //TODO: hash passwords
 
 const express = require("express");
+const cors = require('cors');
 const basicAuth = require('express-basic-auth');
 const fs = require('fs');
 const bodyParser = require('body-parser')
@@ -8,10 +9,14 @@ const helmet = require('helmet');
 // const http = require("http").Server(app);
 
 let app = express();
+if(!process.env.prod){
+  console.log('setting CORS for development purposes');
+  app.use(cors());
+}
 app.use(helmet());
 let adminRouter = express.Router();
 
-const PORT = process.env.PORT?process.env.PORT:3000;
+const PORT = process.env.PORT?process.env.PORT:6060;
 const adminPassword = process.env.ADMINPASSWORD?process.env.ADMINPASSWORD:'gunnarärbäst';
 const fileName = 'users.json';
 
@@ -42,7 +47,10 @@ async function userAuthorizer(username, password, cb){
   cb(null, passwordMatches);
 }
 
-app.use('/admin', adminAuth,adminRouter);
+app.use('/admin', function(req, res, next){
+  console.log(req.headers);
+  next();
+},adminAuth,adminRouter);
 app.all('/', userAuth, function(req, res){
   res.send("this is Gunnars auth API");
 })
@@ -139,6 +147,7 @@ adminRouter.post('/delete-users', async function(req, res){
 });
 
 adminRouter.all('/', function(req, res){
+  // console.log('admin login:', req);
   res.send('hello from admin. you passed');
 })
 

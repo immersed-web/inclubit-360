@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 
 import deviceSettings from './deviceSettings';
 import connectionSettings from './connectionSettings';
+import authState from './authState';
 
 // Use a new variable and export values to change default behaviour.
 let store = null;
@@ -23,6 +24,7 @@ export default function (/* { ssrContext } */) {
     modules: {
       deviceSettings,
       connectionSettings,
+      authState,
     },
 
     // enable strict mode (adds overhead!)

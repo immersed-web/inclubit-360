@@ -5,7 +5,7 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Start.vue') },
-      { path: 'login', component: () => import('pages/Login.vue') },
+      { path: 'login/:loginType?', component: () => import('pages/Login.vue'), props: true },
       { name: 'Watcher View', meta: { label: 'Watcher View' }, path: 'watch', component: () => import('pages/Viewer.vue') },
       { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
       { path: 'aframe', component: () => import('pages/AframeTest.vue') },
