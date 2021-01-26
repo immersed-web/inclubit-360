@@ -5,11 +5,28 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Start.vue') },
-      { name: 'Camera View', path: 'camera', component: () => import('pages/Camera.vue') },
-      { name: 'Watcher View', path: 'watch', component: () => import('pages/Viewer.vue') },
+      { path: 'login', component: () => import('pages/Login.vue') },
+      { name: 'Watcher View', meta: { label: 'Watcher View' }, path: 'watch', component: () => import('pages/Viewer.vue') },
       { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
       { path: 'aframe', component: () => import('pages/AframeTest.vue') },
       { path: 'settings', component: () => import('pages/Settings.vue') },
+    ],
+  },
+  {
+    path: '/',
+    meta: { requiresAuth: true },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: 'camera', component: () => import('pages/Start.vue') },
+      { name: 'Camera View', meta: { label: 'Camera View' }, path: 'camera/send', component: () => import('pages/Camera.vue') },
+    ],
+  },
+  {
+    path: '/admin',
+    meta: { requiresAdmin: true },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Admin.vue') },
     ],
   },
 ];

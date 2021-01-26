@@ -22,11 +22,13 @@ export default {
   },
   computed: {
     text () {
-      if (this.$route.name) {
-        return this.$route.name;
-      } else {
-        return this.$route.fullPath.replace(/^\/+/g, '');
+      if (this.$route.meta && this.$route.meta.label) {
+        return this.$route.meta.label;
       }
+      return '';
+      //  else {
+      //   return this.$route.fullPath.replace(/^\/+/g, '');
+      // }
     },
   },
   created () {
