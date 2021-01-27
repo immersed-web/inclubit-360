@@ -3,6 +3,7 @@
   # (default is try_files before reverse_proxy)
   route {
     reverse_proxy /socket.io/* signaling:3000
+    reverse_proxy /auth/* auth:6060
     try_files {path} /index.html
     file_server {
       root /srv

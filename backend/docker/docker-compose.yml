@@ -18,6 +18,12 @@ services:
       - "signaling"
     volumes:
       - ~/docker-persistence/caddy:/data
+  auth:
+    build: ../auth
+    expose: 6060
+    environment:
+      - ADMIN_USER
+      - ADMIN_PASSWORD
   coturn:
     image: instrumentisto/coturn
     network_mode: "host"

@@ -9,7 +9,8 @@ const helmet = require('helmet');
 // const http = require("http").Server(app);
 
 let app = express();
-if(!process.env.prod){
+if(process.env.DEVELOPMENT){
+  console.log('RUNNING AUTH IN DEVELOPMENT MODE');
   console.log('setting CORS for development purposes');
   app.use(cors());
 }
@@ -17,7 +18,9 @@ app.use(helmet());
 let adminRouter = express.Router();
 
 const PORT = process.env.PORT?process.env.PORT:6060;
-const adminPassword = process.env.ADMINPASSWORD?process.env.ADMINPASSWORD:'gunnarärbäst';
+const adminUser = process.env.ADMIN_USER?process.env.ADMIN_USER:'admin';
+const adminPassword = process.env.ADMIN_PASSWORD?process.env.ADMIN_PASSWORD:'gunnarärbäst';
+// const adminUser = {};
 const fileName = 'users.json';
 
 //Global paths
@@ -25,7 +28,7 @@ app.use(bodyParser.json());
 
 let adminAuth = basicAuth({
   users: {
-    'admin': adminPassword
+    [adminUser]: adminPassword
   }
 });
 
@@ -48,7 +51,8 @@ async function userAuthorizer(username, password, cb){
 }
 
 app.use('/admin', function(req, res, next){
-  console.log(req.headers);
+  // console.log(req.headers);
+  console.log('request from:', req.ip);
   next();
 },adminAuth,adminRouter);
 app.all('/', userAuth, function(req, res){
