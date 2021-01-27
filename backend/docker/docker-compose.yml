@@ -20,7 +20,8 @@ services:
       - ~/docker-persistence/caddy:/data
   auth:
     build: ../auth
-    expose: 6060
+    expose:
+      - "6060"
     environment:
       - ADMIN_USER
       - ADMIN_PASSWORD
