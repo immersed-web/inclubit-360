@@ -21,7 +21,7 @@ const PORT = process.env.PORT?process.env.PORT:6060;
 const adminUser = process.env.ADMIN_USER?process.env.ADMIN_USER:'admin';
 const adminPassword = process.env.ADMIN_PASSWORD?process.env.ADMIN_PASSWORD:'gunnarärbäst';
 // const adminUser = {};
-const fileName = 'users.json';
+const fileName = './users/users.json';
 
 //Global paths
 app.use(bodyParser.json());
@@ -92,9 +92,14 @@ adminRouter.post('/set-users', function(req, res) {
 adminRouter.get('/get-users', async function(req, res) {
   try{
     let userData = await readUserFile();
-    res.send(userData);
+    if(userData){
+      res.send(userData);
+    }else{
+      res.status(404).send('no users created');
+      return;
+    }
   }catch(err){
-    res.status(500).send(`Crash boom boooom`)
+    res.status(404).send(`the resource was not found`)
   }
 })
 
@@ -109,7 +114,8 @@ adminRouter.post('/add-users', async function(req, res){
       userData = await readUserFile();
       console.log(userData);
     }catch (err){ 
-      res.status(500).send(`couldn't read/parse current user data...`);
+      // res.status(500).send(`couldn't read/parse current user data... resetting...`);
+      userData = {};
     }
     try{
       let createdUsers = [];
@@ -124,6 +130,7 @@ adminRouter.post('/add-users', async function(req, res){
       console.error(`couldn't create/write userdata`);
       console.error(err);
       res.status(500).send(`couldn't create/write userdata`);
+      return;
     }
   }
   // res.status(200).send('hello add user');

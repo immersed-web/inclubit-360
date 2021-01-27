@@ -18,6 +18,8 @@ services:
       - "signaling"
     volumes:
       - ~/docker-persistence/caddy:/data
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ../caddy/dist:/dist
   auth:
     build: ../auth
     expose:
@@ -25,6 +27,8 @@ services:
     environment:
       - ADMIN_USER
       - ADMIN_PASSWORD
+    volumes:
+      - ./users:/usr/app/users
   coturn:
     image: instrumentisto/coturn
     network_mode: "host"

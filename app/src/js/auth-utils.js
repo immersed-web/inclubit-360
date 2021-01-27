@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { store } from 'src/store';
 
-const authEndpoint = 'http://localhost:6060';
+const authEndpoint = process.env.PROD ? `${process.env.BACKEND_SERVER_PROTOCOL}://${process.env.BACKEND_SERVER}/auth` : 'http://localhost:6060';
 
 export function generateAuthHeader (username, password) {
   return 'Basic ' + btoa(unescape(encodeURIComponent(username + ':' + password)));

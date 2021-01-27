@@ -1,4 +1,4 @@
 FROM caddy:2.2.1
 
 COPY Caddyfile /etc/caddy/Caddyfile
-COPY spa /srv
+# COPY spa /srv
