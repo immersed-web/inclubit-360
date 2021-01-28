@@ -6,9 +6,7 @@
       uri strip_prefix /auth 
       reverse_proxy auth:6060
     }
-    
     reverse_proxy /socket.io/* signaling:3000
-    
     root * /dist/spa
     try_files {path} /index.html
     file_server {

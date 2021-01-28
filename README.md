@@ -10,7 +10,7 @@ The source code for the client side is implemented using the web framework [Quas
     - Progressive Web App (PWA)
   - Mobile App (Android and IOS)
   - Desktop App (Windows and OSX)
-In this project the main focus has been to deploy the application as an SPA and desktop application. It should be possible, though, to deploy it as any of the others, for example a PWA.
+In this project the main focus has been to deploy the application as an SPA and desktop application. It should (in theory) be possible, though, to deploy it as any of the others, for example a PWA.
 
 ## Backend
 
@@ -21,22 +21,37 @@ In this project, the containers are configured and defined in a docker-compose f
 The different containers are:
   - Caddy. Reverse proxy and static file server with automatic HTTPS
   - Signaling Server
+  - Auth Server
   - STUN/TURN Server
 
 #### Caddy
-The file server is an instance of [Caddy v2](https://caddyserver.com/). Caddy is a server software written in the language Go. It has built in functionality for retrieving and setting up https certificates using the free, open and automated certificate authority, [Let's Encrypt](https://letsencrypt.org/). In this project, Caddy is set up to act as both a static file server as well as a reverse proxy for the signaling server. Key parts of the caddy configuration:
+The file server is an instance of [Caddy v2](https://caddyserver.com/). Caddy is a server software written in the language Go. It has built in functionality for retrieving and setting up https certificates using the free, open and automated certificate authority, [Let's Encrypt](https://letsencrypt.org/). In this project, Caddy is set up to act as both a static file server as well as a reverse proxy for the signaling server and auth endpoint. Key parts of the caddy configuration:
 ```
-    reverse_proxy /socket.io/* signaling:3000
-    file_server {
-      root /srv
-    }
+route { 
+  route /auth/* {
+    uri strip_prefix /auth 
+    reverse_proxy auth:6060
   }
+  reverse_proxy /socket.io/* signaling:3000
+  root * /dist/spa
+  try_files {path} /index.html
+  file_server {
+    root /dist/spa
+  }
+}
 ```
-Looking at the configuration you can see that requests that matches the path ".../socket.io/..." is reverse proxied to the signaling server. All other requests are handled as static file requests.
+Looking at the configuration you can see that requests that matches the path ".../socket.io/..." are reverse proxied to the signaling server. The requests that matches ".../auth/..." are stripped of the "auth" prefix in the url and then proxied to the auth endpoint.
+All other requests are handled as static file requests.
 
 #### Signaling server
 The signaling server is responsible for handling the negotiation between the two peers when setting up the [webRTC](https://webrtc.org/) (web Real Time Communication) link.
 The signaling server is a nodejs-application
+
+#### Auth endpoint
+The auth endpoint is a node.js server running express.js. The authentication is very rudimentary and uses [basic access authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
+The node server is running in a container. The user list is kept in a json file that is mounted through a docker volume folder. The passwords are stored as is (not hashed, that is), so be sure to never reuse passwords from other services (or passwords that in some other way are considered personal).
+
+>**Note**: The auth is only used to protect some routes in the frontend. Because of the nature of SPA-applications it's not possible to 100% restrict access to those routes. SPA applications usually bundle the whole app and sends to the client, so the client have actually already downloaded the relevant pages. The frontend merely tries to check whether the user should be allowed to see it or not. Because this happens client side a bad actor could extract/modify the client-side code to get access to the (already downloaded) restricted routes/pages.
 
 #### STUN/TURN
 The STUN/TURN server is an instance of the open-source implemenation [COTURN](https://github.com/coturn/coturn). It's responsible for a some of the technical details involved when running a webRTC connection.
@@ -65,7 +80,11 @@ There is an example called `example.env` in the folder *./backend/docker*. This 
 BACKEND_SERVER_PROTOCOL=https
 BACKEND_DEFAULT_PORT_NUMBER=443
 # The domain name of the server that runs all the containers
-BACKEND_SERVER=a.domain.that.you.have.registered.and.owns
+BACKEND_SERVER=a-domain-that-you-have-registered-and-owns.com
+
+### AUTH CONFIG
+ADMIN_USER=admin
+ADMIN_PASSWORD=megasecret
 
 ### TURN SERVER CONFIG ###
 TURN_USER=REPLACETHISWITHSOMENICENAME
@@ -73,7 +92,14 @@ TURN_PASSWORD=USEANICESECRET
 TURN_UDP_PORT=3478
 TURN_TLS_PORT=5349
 ```
-A normal setup would require settings the BACKEND_SERVER, TURN_USER and TURN_PASSWORD. The rest could be left as is.
+A normal setup would require setting new values for:
+- BACKEND_SERVER
+- TURN_USER
+- TURN_PASSWORD
+- ADMIN_USER
+- ADMIN_PASSWORD
+
+The rest could be left as is.
 
 #### Instructions
 To install inclubit backend and run it on your own server, you first need to retrieve the repository from github.
@@ -114,6 +140,8 @@ There are some shell scripts provided to help with seting up the environment for
 * `setup-docker.sh` - This script will attempt to download and install docker as well as docker-compose. It will try to enable docker as a daemon that starts automatically on boot. It will also create a folder called docker-persistence, for mounting volumes of the docker-containers. The volumes are used to store persistent data between building/tearing down the docker containers.
 * `setup-node.sh` - This script will download and install nodejs. Nodejs is required to run the signaling server. It's also required to build the frontend website from sourcecode.
 * `prepare-spa-build.sh` - This script will build the inclubit 360 frontend website and copy the result to the caddy folder to be used by the Caddy docker container. This script requires nodejs to be installed.
+
+>**Tip:** If you can't seem to run the scripts it can be that they aren't marked as executables and thus the `./file.sh` syntax won't work. You could then either `chmod +x` the files to be executable, or perhaps easier, run them like so `/bin/bash file.sh`
 
 
 #### Ports
