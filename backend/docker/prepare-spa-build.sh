@@ -12,8 +12,12 @@ echo ""
 
 # printenv > .env.dev
 
-echo "copying .env to app folder so variables get injected into the built app"
-cp .env ../../app/.env
+# echo "copying .env to app folder so variables get injected into the built app"
+# cp .env ../../app/.env
+
+echo "reading .env file and copies relevant variables"
+# grep -vE "(ADMIN_USER|ADMIN_PASSWORD)" .env > ../../app/.env
+grep -B 9999999 "BACKEND_ONLY_VARIABLES" .env > ../../app/.env
 
 echo "running npm install"
 npm --prefix ../../app install
