@@ -20,10 +20,10 @@ The backend consists of a few different server programs that are needed to host 
 In this project, the containers are configured and defined in a docker-compose file. [Docker compose](https://docs.docker.com/compose/) is a tool for defining and running multiple containers at the same time. 
 
 The different containers are:
-  - Caddy. Reverse proxy and static file server with automatic HTTPS
-  - Signaling Server
-  - Auth Server
-  - STUN/TURN Server
+  - **Caddy**. Reverse proxy and static file server with automatic HTTPS
+  - **Signaling Server**. WebRTC signaling implemented with nodejs and socket.io
+  - **Auth Server**. Nodejs express app implementing basic authentication.
+  - **STUN/TURN Server**. An instance of COTURN open source TURN-server
 
 #### Caddy
 The file server is an instance of [Caddy v2](https://caddyserver.com/). Caddy is a server software written in the language Go. It has built in functionality for retrieving and setting up https certificates using the free, open and automated certificate authority, [Let's Encrypt](https://letsencrypt.org/). In this project, Caddy is set up to act as both a static file server as well as a reverse proxy for the signaling server and auth endpoint. Key parts of the caddy configuration:
@@ -48,7 +48,7 @@ All other requests are handled as static file requests.
 The signaling server is responsible for handling the negotiation between the two peers when setting up the [webRTC](https://webrtc.org/) (web Real Time Communication) link.
 The signaling server is a nodejs-application
 
-#### Auth endpoint
+#### Auth server
 The auth endpoint is a node.js server running express.js. The authentication is very rudimentary and uses [basic access authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
 The node server is running in a container. The user list is kept in a json file that is mounted through a docker volume folder. The passwords are stored as is (not hashed, that is), so be sure to never reuse passwords from other services (or passwords that in some other way are considered personal).
 
