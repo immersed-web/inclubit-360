@@ -80,17 +80,21 @@ There is an example called `example.env` in the folder *./backend/docker*. This 
 BACKEND_SERVER_PROTOCOL=https
 BACKEND_DEFAULT_PORT_NUMBER=443
 # The domain name of the server that runs all the containers
-BACKEND_SERVER=a-domain-that-you-have-registered-and-owns.com
-
-### AUTH CONFIG
-ADMIN_USER=admin
-ADMIN_PASSWORD=megasecret
+BACKEND_SERVER=a.domain.that.you.have.registered.and.owns
 
 ### TURN SERVER CONFIG ###
 TURN_USER=REPLACETHISWITHSOMENICENAME
 TURN_PASSWORD=USEANICESECRET
 TURN_UDP_PORT=3478
 TURN_TLS_PORT=5349
+
+### THE COMMENT BELOW THIS LINE IS USED BY A SCRIPT TO REMOVE VARIABLES AFTWERWARDS
+### PUT VARIABLES THAT SHOULDN*T BE INCLUDED IN FRONTEND AFTER THIS LINE
+### [DONT CHANGE THIS LINE!!!] BACKEND_ONLY_VARIABLES 
+
+### AUTH CONFIG
+ADMIN_USER=adminuser
+ADMIN_PASSWORD=such-secret-wow
 ```
 A normal setup would require setting new values for:
 - BACKEND_SERVER
@@ -134,6 +138,15 @@ Now let's run the project:
 docker-compose up --build
 ```
 
+
+#### Update to new version
+If you want to update to a new version available on github, you need to stop the docker services, pull the latest version from github, run the frontend build script, and start the docker services.
+Steps:
+- cd into `inclubit-360/backend/docker`
+- run `docker-compose down`
+- run `git pull`
+- run the shell script `prepare-spa-build.sh`
+- run `docker-compose up --build`
 
 #### Bash Utility Scripts
 There are some shell scripts provided to help with seting up the environment for running the backend:
