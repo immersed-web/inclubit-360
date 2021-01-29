@@ -256,7 +256,7 @@ export default {
     },
     endCall () {
       // peerUtil.destroyPeer();
-      this.$router.replace('/');
+      this.$router.replace('/camera');
     },
     sendData (type, data) {
       peerUtil.sendData(type, data);
