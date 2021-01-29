@@ -10,7 +10,8 @@ The source code for the client side is implemented using the web framework [Quas
     - Progressive Web App (PWA)
   - Mobile App (Android and IOS)
   - Desktop App (Windows and OSX)
-In this project the main focus has been to deploy the application as an SPA and desktop application. It should (in theory) be possible, though, to deploy it as any of the others, for example a PWA.
+
+In this project the main focus has been to deploy the application as an SPA. It should (in theory) be possible, though, to deploy it as any of the others, for example a PWA.
 
 ## Backend
 
