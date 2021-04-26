@@ -19,3 +19,12 @@ Eskilstuna - Oculus Go
 ### Single container
 - https://computingforgeeks.com/how-to-run-docker-containers-on-windows-server-2019/
 - https://blog.sixeyed.com/getting-started-with-docker-on-windows-server-2019/
+
+
+## Thing for next version:
+- inloggnings-system. Redan implementerat: 16h
+- layout och färg: 16h
+- researcha streaming och möjlighet att begränsa det: 16h
+- inloggning även för elevsidan: 8h
+- förbättrad/säkrare autentisering mot stream-servern (minskar risken för att obehöriga använder "dataslussnings-funktionaliteten" i servern för eget bruk): 24h
+- Fixa ikon och title: 4h

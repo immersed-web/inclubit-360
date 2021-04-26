@@ -1,19 +1,24 @@
 <template>
-  <q-page id="main-container" class="items-center justify-evenly column">
-    <!-- <div  > -->
-    <div class="col-auto row q-gutter-md items-center">
-      <!-- <q-form> -->
-      <h2 class="q-my-none">
-        Namn på rum:
-      </h2>
-      <q-input
-        v-model="roomName"
-        dense
-        outlined
-        bordered
-        mask="xxxxxxxxxxxxxxxx"
-        class="q-my-none"
-      />
+  <q-page id="main-container" class="row justify-center">
+    <div id="main-column" class="full-height column no-wrap">
+      <h1 id="main-title" class="self-end">
+        INCLUBIT36<span>0</span>
+      </h1>
+
+      <div class="col-auto q-gutter-md">
+        <!-- <q-form> -->
+        <h2 class="q-my-none">
+          Rumskod
+        </h2>
+        <q-input
+          v-model="roomName"
+          dense
+          :dark="false"
+          outlined
+          bg-color="white"
+          mask="xxxxxxxxxxxxxxxx"
+          class="text-black q-my-none"
+        />
 
       <!-- <q-btn
         :disable="roomName"
@@ -24,51 +29,57 @@
         type="submit"
       /> -->
       <!-- </q-form> -->
+      </div>
+      <div class="col-6 column q-py-md">
+        <h3 class="col-auto">
+          Rum
+        </h3>
+        <q-list bordered class="col scroll room-list">
+          <q-item v-for="room in recentRooms" :key="room.name" clickable @click="roomName = room.name">
+            <q-item-section>
+              {{ room.name }}
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                round
+                flat
+                icon="clear"
+                @click.stop="removeRoom(room)"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+      <div class="col-auto">
+        <q-btn
+          v-if="isCamera"
+          color="primary"
+          size="lg"
+          label="Skicka kameraström"
+          @click="goToCameraPage"
+        />
+        <q-btn
+          v-else
+          color="primary"
+          text-color="white"
+          flat
+          outline
+          no-caps
+          size="lg"
+          @click="goToViewerPage"
+        >
+          <q-icon class="q-mr-md" name="wifi" color="primary" />
+          Se kameraström
+        </q-btn>
+      </div>
     </div>
-    <div class="col-6 column q-pa-md">
-      <h3 class="col-auto">
-        Tidigare använda rum
-      </h3>
-      <q-list bordered class="col scroll">
-        <q-item v-for="room in recentRooms" :key="room.name" clickable @click="roomName = room.name">
-          <q-item-section>
-            {{ room.name }}
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              round
-              flat
-              icon="clear"
-              @click.stop="removeRoom(room)"
-            />
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </div>
-    <div class="col-auto">
-      <q-btn
-        v-if="isCamera"
-        color="primary"
-        class="q-mx-xl"
-        size="lg"
-        label="Skicka kameraström"
-        @click="goToCameraPage"
-      />
-      <q-btn
-        v-else
-        color="primary"
-        class="q-mx-xl"
-        size="lg"
-        label="Titta på kameraström"
-        @click="goToViewerPage"
-      />
-    </div>
-    <q-page-sticky position="bottom-right" :offset="[40, 40]">
+    <q-page-sticky position="bottom-right" :offset="[30, 30]">
       <q-btn
         id="settings-button"
         size="xl"
         round
-        color="black"
+        flat
+        color="white"
         icon="settings"
         to="settings"
       >
@@ -77,7 +88,6 @@
         </q-tooltip>
       </q-btn>
     </q-page-sticky>
-    <!-- </div> -->
   </q-page>
 </template>
 
@@ -172,6 +182,11 @@ export default {
   // grid-template-rows: 1fr;
 }
 
+#main-column {
+  min-width: 20rem;
+  max-width: 25rem;
+}
+
 #main-container div {
   // flex: 1 1 0;
   // justify-self: center;
@@ -180,6 +195,21 @@ export default {
   // * {
   //   margin: 3rem;
   // }
+}
+
+#main-title {
+  font-size: 3.5rem;
+  letter-spacing: 1rem;
+  text-align: end;
+  // direction: rtl;
+  span {
+    letter-spacing: 0;
+  }
+}
+
+.room-list {
+  // min-width: 15rem;
+  background-color: $primary;
 }
 
 // #settings-button {

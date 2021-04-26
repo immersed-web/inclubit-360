@@ -13,14 +13,14 @@
 //   // z-index: -1;
 // }
 
-$heading-base-size: 1.7rem;
-$heading-scale: .14; // amount headings shrink from h1 to h6
+$heading-base-size: 3rem;
+$heading-scale: .35; // amount headings shrink from h1 to h6
 
 @for $i from 1 through 6 {
   h#{$i} {
-    font-size: $heading-base-size - $heading-scale * ($i);
-    line-height: $heading-base-size - $heading-scale * ($i) + 0.5;
-    font-weight: 600;
+    font-size: $heading-base-size - $heading-scale * ($i - 1);
+    line-height: $heading-base-size - $heading-scale * ($i - 1) + 0.5;
+    // font-weight: 600;
     margin-top: 0.2rem + 0.2 * (7 - $i);
     margin-bottom: 0.4rem + 0.2 * (7 - $i);
   }
