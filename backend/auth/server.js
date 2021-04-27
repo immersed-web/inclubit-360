@@ -4,9 +4,11 @@ const express = require("express");
 const cors = require('cors');
 const basicAuth = require('express-basic-auth');
 const fs = require('fs');
-const bodyParser = require('body-parser')
+const crypto = require('crypto');
+// const bodyParser = require('body-parser')
 const helmet = require('helmet');
 // const http = require("http").Server(app);
+
 
 let app = express();
 if(process.env.DEVELOPMENT){
@@ -17,14 +19,18 @@ if(process.env.DEVELOPMENT){
 app.use(helmet());
 let adminRouter = express.Router();
 
+
+let userRouter = express.Router();
+
 const PORT = process.env.PORT?process.env.PORT:6060;
 const adminUser = process.env.ADMIN_USER?process.env.ADMIN_USER:'admin';
 const adminPassword = process.env.ADMIN_PASSWORD?process.env.ADMIN_PASSWORD:'gunnarärbäst';
+const TURN_SHARED_SECRET = process.env.TURN_SHARED_SECRET?process.env.TURN_SHARED_SECRET:'rihanna is a good singer';
 // const adminUser = {};
 const fileName = './users/users.json';
 
 //Global paths
-app.use(bodyParser.json());
+app.use(express.json());
 
 let adminAuth = basicAuth({
   users: {
@@ -38,32 +44,34 @@ let userAuth = basicAuth({
 })
 
 async function userAuthorizer(username, password, cb){
-  // console.log('user auth triggered', username, password);
+  console.log('user auth triggered', username, password);
   userData = await readUserFile();
   if(!userData[username]){
     console.log('no match for username');
     cb(null, false);
     return;
   }
-  let passwordMatches = basicAuth.safeCompare(password, userData[username]);
-  console.log('passwordMatches:',passwordMatches);
-  cb(null, passwordMatches);
+  const foundPwd = userData[username].password;
+  if(foundPwd){
+    let passwordMatches = basicAuth.safeCompare(password, foundPwd);
+    console.log('passwordMatches:',passwordMatches);
+    cb(null, passwordMatches);
+    return;
+  }
+  cb('fuck you', false);
 }
 
 app.use('/admin', function(req, res, next){
   // console.log(req.headers);
-  console.log('request from:', req.ip);
+  console.log('admin request from:', req.ip);
   next();
 },adminAuth,adminRouter);
-app.all('/', userAuth, function(req, res){
-  res.send("this is Gunnars auth API");
-})
 
-// ADMIN Paths
-// adminRouter.all('/', function(req, res, next){
-//   // res.status(200).send('You passed')
-//   next()
-// });
+// app.all('/', userAuth, function(req, res){
+//   res.send("this is Gunnars auth API");
+// })
+
+// ADMIN PATHS **************************
 async function readUserFile(){
   try{
     let fileData = fs.readFileSync(fileName);
@@ -106,34 +114,87 @@ adminRouter.get('/get-users', async function(req, res) {
 adminRouter.post('/add-users', async function(req, res){
   console.log('add-user', req.body);
   if(!req.body){
-    res.status(400).send(`don't give me SHIT!`)
-  }else{
-    const creds = req.body;
-    let userData;
-    try{
-      userData = await readUserFile();
-      console.log(userData);
-    }catch (err){ 
-      // res.status(500).send(`couldn't read/parse current user data... resetting...`);
-      userData = {};
-    }
-    try{
-      let createdUsers = [];
-      for(const [name, password] of Object.entries(creds)){
-        createdUsers.push(name);
-        userData[name] = password;
-      }
-      writeUserFile(userData);
-      res.status(200).send(createdUsers);
-      return;
-    }catch(err){
-      console.error(`couldn't create/write userdata`);
-      console.error(err);
-      res.status(500).send(`couldn't create/write userdata`);
-      return;
-    }
+    res.status(400).send(`don't give me SHIT!`);
+    return;
   }
-  // res.status(200).send('hello add user');
+
+  const newUsers = req.body;
+  let userData;
+  try{
+    userData = await readUserFile();
+    console.log(userData);
+  }catch (err){ 
+    // res.status(500).send(`couldn't read/parse current user data... resetting...`);
+    userData = {};
+  }
+
+  try{
+    let response = {createdUsers: [], notCreatedUsers: []};
+    for(const [name, data] of Object.entries(newUsers)){
+      if(userData[name]){
+        console.error('tried to add already existing user');
+        response.notCreatedUsers.push(name);
+        continue;
+      }
+      response.createdUsers.push(name);
+      userData[name] = data;
+    }
+    if(response.createdUsers.length){
+      writeUserFile(userData);
+      res.status(200).send(response);
+    }else{
+      res.status(409).send(response);
+    }
+    return;
+  }catch(err){
+    console.error(`couldn't create/write userdata`);
+    console.error(err);
+    res.status(500).send(`couldn't create/write userdata`);
+    return;
+  }
+})
+
+adminRouter.post('/update-users', async function (req, res) {
+  if(!req.body){
+    console.log('received an invalid request: ', req);
+    res.status(400).send(`don't give me SHIT!`);
+    return;
+  }
+  console.log('request to update user(s)', req.body);
+
+  const userObject = req.body;
+  let userData;
+  try{
+    userData = await readUserFile();
+    // console.log(userData);
+  }catch (err){ 
+    res.status(500).send(`couldn't read/parse current user data... bailing out!`);
+    return;
+  }
+
+  try{
+    let response = {updatedUsers: [], notUpdatedUsers: []};
+    for(const [name, data] of Object.entries(userObject)){
+      if(!userData[name]){
+        console.error('no such users found:', name);
+        response.notUpdatedUsers.push(name);
+        continue;
+      }
+      response.updatedUsers.push(name);
+      userData[name] = data;
+    }
+    if(response.updatedUsers.length){
+      writeUserFile(userData);
+      res.status(200).send(response);
+    }else{
+      res.status(404).send(response);
+    }
+    return;
+  } catch(err){
+    console.error('failed to update user(s)');
+    console.error(err);
+    res.status(500).send('crash boom boom');
+  }
 })
 
 adminRouter.post('/delete-users', async function(req, res){
@@ -151,7 +212,7 @@ adminRouter.post('/delete-users', async function(req, res){
     res.send(deletedUsers)
   }catch(err){
     console.error(err);
-    res.status(500).send(`crash bom bom`);
+    res.status(500).send(`crash boom boom`);
   }
 
   // res.send('hello from admin/delete-user. you passed');
@@ -161,6 +222,50 @@ adminRouter.all('/', function(req, res){
   // console.log('admin login:', req);
   res.send('hello from admin. you passed');
 })
+
+
+// USER PATHS
+app.use('/user', function(req, res, next){
+  // console.log(req.headers);
+  console.log('user route request from:', req.ip);
+  next();
+},userAuth ,userRouter);
+
+function getTURNCredentials(name, secret){    
+  let unixTimeStamp = parseInt(Date.now()/1000) + 2*3600;   // this credential would be valid for the next 24 hours
+  let username = [unixTimeStamp, name].join(':');
+  let password;
+  let hmac = crypto.createHmac('sha1', secret);
+  hmac.setEncoding('base64');
+  hmac.write(username);
+  hmac.end();
+  password = hmac.read();
+  return {
+      username: username,
+      password: password
+  };
+}
+
+userRouter.get('/', function(req, res){
+  console.log('user request');
+  res.send("this is Gunnars auth API. Hurraay!");
+});
+
+userRouter.get('/get-turn-credentials', async function(req, res){
+  try{
+    const user = req.auth.user;
+    console.log('turn API request from: ', user);
+    // let password = req.auth;
+    const creds = getTURNCredentials(user, TURN_SHARED_SECRET);
+    res.send(creds);
+    return;
+  }catch(err){
+    console.error(err);
+    res.status(500).send(`crash boom boom`);
+  }
+
+  // res.send('hello from admin/delete-user. you passed');
+});
 
 
 

@@ -19,3 +19,23 @@ export async function get (path) {
 export async function post (path, data) {
   return axios.post(`${authEndpoint}${path}`, data, { headers: { authorization: authHeader() } });
 }
+
+export async function getUser (path) {
+  return axios.get(`${authEndpoint}/user${path}`, { headers: { authorization: authHeader() } });
+}
+
+export async function postUser (path, data) {
+  return axios.post(`${authEndpoint}/user${path}`, data, { headers: { authorization: authHeader() } });
+}
+
+export async function getAdmin (path) {
+  return axios.get(`${authEndpoint}/admin${path}`, { headers: { authorization: authHeader() } });
+}
+
+export async function postAdmin (path, data) {
+  return axios.post(`${authEndpoint}/admin${path}`, data, { headers: { authorization: authHeader() } });
+}
+
+export async function logOut () {
+  store.dispatch('authState/logout');
+}

@@ -27,6 +27,7 @@ services:
     environment:
       - ADMIN_USER
       - ADMIN_PASSWORD
+      - TURN_SHARED_SECRET
     volumes:
       - ./users:/usr/app/users
   coturn:

@@ -1,77 +1,80 @@
 <template>
   <q-page id="main-container" class="row justify-center">
-    <div id="main-column" class="full-height column no-wrap">
-      <h1 id="main-title" class="self-end">
-        INCLUBIT36<span>0</span>
-      </h1>
-
-      <div class="col-auto q-gutter-md">
-        <!-- <q-form> -->
-        <h2 class="q-my-none">
-          Rumskod
+    <div id="main-column" class="full-height column no-wrap justify-center q-py-xl">
+      <div id="main-title" class=" self-end column justify-end">
+        <h1>
+          INCLUBIT36<span>0</span>
+        </h1>
+        <h2>
+          {{ isCamera?'Skapa rum':'Anslut till rum' }}
         </h2>
-        <q-input
-          v-model="roomName"
-          dense
-          :dark="false"
-          outlined
-          bg-color="white"
-          mask="xxxxxxxxxxxxxxxx"
-          class="text-black q-my-none"
-        />
+      </div>
 
-      <!-- <q-btn
-        :disable="roomName"
-        color="primary"
-        class="q-my-none inline"
-        label="Välj"
-        size="md"
-        type="submit"
-      /> -->
-      <!-- </q-form> -->
+      <div id="ui-container" class="column no-wrap">
+        <div class="q-my-md">
+          <!-- <q-form> -->
+          <h5 class="q-my-none">
+            Rumskod
+          </h5>
+          <q-input
+            v-model="roomName"
+            dense
+            :dark="false"
+            outlined
+            bg-color="white"
+            mask="xxxxxxxxxxxxxxxx"
+            class="text-black q-my-none"
+          />
+        </div>
+        <div class="col-grow column q-my-md">
+          <h5 class="q-my-none">
+            Tidigare använda rum
+          </h5>
+          <q-list bordered class="room-list">
+            <q-item v-for="room in recentRooms" :key="room.name" clickable @click="roomName = room.name">
+              <q-item-section>
+                {{ room.name }}
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  round
+                  flat
+                  icon="clear"
+                  @click.stop="removeRoom(room)"
+                />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+        <div class="">
+          <q-btn
+            v-if="isCamera"
+            no-caps
+            color="primary"
+            text-color="white"
+            flat
+            size="lg"
+            @click="goToCameraPage"
+          >
+            <q-icon class="q-mr-md" color="primary" name="o_videocam" />
+            Skicka kameraström
+          </q-btn>
+          <q-btn
+            v-else
+            color="primary"
+            text-color="white"
+            flat
+            outline
+            no-caps
+            size="lg"
+            @click="goToViewerPage"
+          >
+            <q-icon class="q-mr-md" name="wifi" color="primary" />
+            Se kameraström
+          </q-btn>
+        </div>
       </div>
-      <div class="col-6 column q-py-md">
-        <h3 class="col-auto">
-          Rum
-        </h3>
-        <q-list bordered class="col scroll room-list">
-          <q-item v-for="room in recentRooms" :key="room.name" clickable @click="roomName = room.name">
-            <q-item-section>
-              {{ room.name }}
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                round
-                flat
-                icon="clear"
-                @click.stop="removeRoom(room)"
-              />
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-      <div class="col-auto">
-        <q-btn
-          v-if="isCamera"
-          color="primary"
-          size="lg"
-          label="Skicka kameraström"
-          @click="goToCameraPage"
-        />
-        <q-btn
-          v-else
-          color="primary"
-          text-color="white"
-          flat
-          outline
-          no-caps
-          size="lg"
-          @click="goToViewerPage"
-        >
-          <q-icon class="q-mr-md" name="wifi" color="primary" />
-          Se kameraström
-        </q-btn>
-      </div>
+      <q-btn label="Test TURN cred api" color="pink" text-color="black" @click="getTurnCreds" />
     </div>
     <q-page-sticky position="bottom-right" :offset="[30, 30]">
       <q-btn
@@ -93,6 +96,7 @@
 
 <script lang="ts">
 import { mapMutations, mapActions } from 'vuex';
+import { getUser } from 'src/js/auth-utils';
 export default {
   name: 'Start',
   props: {
@@ -110,13 +114,15 @@ export default {
   created () {
     try {
       const storageResult = localStorage.getItem('recentRooms');
-      const recentRooms = JSON.parse(storageResult);
-      if (recentRooms.length) {
-        recentRooms.sort((a, b) => {
-          return a.date < b.date ? 1 : -1;
-        });
-        this.recentRooms = recentRooms;
-        this.roomName = recentRooms[0].name;
+      if (storageResult !== null) {
+        const recentRooms = JSON.parse(storageResult);
+        if (recentRooms.length) {
+          recentRooms.sort((a, b) => {
+            return a.date < b.date ? 1 : -1;
+          });
+          this.recentRooms = recentRooms;
+          this.roomName = recentRooms[0].name;
+        }
       }
     } catch (err) {
       console.error('failed to get recent rooms from storage');
@@ -130,6 +136,10 @@ export default {
     ...mapActions('connectionSettings', {
       saveConnSettingsToStorage: 'saveSettingsToStorage',
     }),
+    async getTurnCreds () {
+      const response = await getUser('/get-turn-credentials');
+      console.log(response);
+    },
     addRoomToRecent () {
       const foundRoom = this.recentRooms.find(room => room.name === this.roomName);
       if (foundRoom) {
@@ -183,8 +193,12 @@ export default {
 }
 
 #main-column {
-  min-width: 20rem;
-  max-width: 25rem;
+  min-width: 10rem;
+  max-width: 20rem;
+}
+
+#ui-container {
+  flex: 0.7 1 auto;
 }
 
 #main-container div {
@@ -198,17 +212,33 @@ export default {
 }
 
 #main-title {
-  font-size: 3.5rem;
-  letter-spacing: 1rem;
-  text-align: end;
-  // direction: rtl;
-  span {
-    letter-spacing: 0;
+  flex: 0 1 auto;
+  h1 {
+    font-size: 3.5rem;
+    letter-spacing: 1rem;
+    text-align: end;
+    // direction: rtl;
+    span {
+      letter-spacing: 0;
+    }
+  }
+
+  h2 {
+    color: $secondary;
+    font-family: 'Dosis', sans-serif;
+    margin-top: -0.8em;
+    text-transform: lowercase;
+    text-align: end;
+    // font-style: italic;
+    font-weight: 200;
   }
 }
 
 .room-list {
   // min-width: 15rem;
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 10rem;
   background-color: $primary;
 }
 

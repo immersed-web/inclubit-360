@@ -1,5 +1,5 @@
 
-import { generateAuthHeader, get } from 'src/js/auth-utils';
+import { generateAuthHeader, getUser, getAdmin } from 'src/js/auth-utils';
 
 // const authEndpoint = 'http://localhost:6060';
 
@@ -9,6 +9,7 @@ export default {
     currentUser: null,
     authHeader: null,
     isAdmin: false,
+    canCreateRooms: false,
   },
   getters: {
     isLoggedIn (state) {
@@ -30,9 +31,13 @@ export default {
     setAuthHeader (state, header) {
       state.authHeader = header;
     },
+    setCanCreateRooms (state, value) {
+      state.canCreateRooms = value;
+    },
     clearAuth (state) {
       state.currentUser = null;
       state.isAdmin = false;
+      state.authHeader = null;
     },
   },
   actions: {
@@ -54,7 +59,7 @@ export default {
       console.log('generated authHeader:', header);
       commit('setAuthHeader', header);
 
-      const response = await get('/');
+      const response = await getUser('/');
 
       if (response.status === 200) {
         commit('setCurrentUser', username);
@@ -69,7 +74,7 @@ export default {
       console.log('generated authHeader:', header);
       commit('setAuthHeader', header);
 
-      const response = await get('/admin');
+      const response = await getAdmin('/');
 
       if (response.status === 200) {
         commit('setCurrentUser', username);
@@ -79,6 +84,10 @@ export default {
         commit('clearAuth');
         throw Error('invalid login');
       }
+    },
+    async logout ({ commit }) {
+      localStorage.removeItem('authState');
+      commit('clearAuth');
     },
   },
 };
