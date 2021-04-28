@@ -102,16 +102,19 @@
         </div>
       </q-form>
     </div>
-    <q-page-sticky position="top-right" :offset="[20, 20]">
+    <!-- <q-page-sticky position="top-right" :offset="[20, 20]">
       <q-btn icon="logout" flat label="logga ut" @click="logoutAdmin" />
-    </q-page-sticky>
+    </q-page-sticky> -->
+    <sticky-user-overlay :route="'/admin/login'" />
   </q-page>
 </template>
 
 <script>
-import { getAdmin, postAdmin, logOut } from 'src/js/auth-utils';
+import { getAdmin, postAdmin } from 'src/js/auth-utils';
+import StickyUserOverlay from 'src/components/StickyUserOverlay.vue';
 export default {
   name: 'Admin',
+  components: { StickyUserOverlay },
   data () {
     return {
       error: '',
@@ -135,10 +138,10 @@ export default {
     this.fetchUsers();
   },
   methods: {
-    async logoutAdmin () {
-      await logOut();
-      this.$router.replace('/');
-    },
+    // async logoutAdmin () {
+    //   await logout();
+    //   this.$router.replace('/admin');
+    // },
     async fetchUsers () {
       const response = await getAdmin('/get-users');
       console.log(response.data);

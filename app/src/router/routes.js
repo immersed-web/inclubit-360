@@ -2,19 +2,16 @@
 const routes = [
   {
     path: '/',
+    meta: { requiresUser: true },
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Start.vue') },
-      { path: 'login/:loginType?', component: () => import('pages/Login.vue'), props: true },
       { name: 'Watcher View', meta: { label: 'Watcher View' }, path: 'watch', component: () => import('pages/Viewer.vue') },
-      { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
-      { path: 'aframe', component: () => import('pages/AframeTest.vue') },
-      { path: 'settings', component: () => import('pages/Settings.vue') },
     ],
   },
   {
     path: '/',
-    meta: { requiresAuth: true },
+    meta: { requiresRoomCreator: true },
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: 'camera', component: () => import('pages/Start.vue'), props: { isCamera: true } },
@@ -28,6 +25,27 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Admin.vue') },
+    ],
+  },
+  {
+    path: '/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        name: 'login',
+        path: 'login/',
+        component: () => import('pages/Login.vue'),
+        props: route => { if (route.params.target) { return { target: route.params.target }; } else return {}; },
+      },
+      {
+        name: 'adminLogin',
+        path: 'admin/login',
+        component: () => import('pages/Login.vue'),
+        props: route => { return { loginType: 'admin' }; },
+      },
+      { path: 'test', component: () => import('pages/PeerVideoTest.vue') },
+      { path: 'aframe', component: () => import('pages/AframeTest.vue') },
+      { path: 'settings', component: () => import('pages/Settings.vue') },
     ],
   },
 ];

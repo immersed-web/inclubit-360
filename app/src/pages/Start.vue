@@ -91,14 +91,20 @@
         </q-tooltip>
       </q-btn>
     </q-page-sticky>
+    <!-- <q-page-sticky position="top-right" :offset="[20, 20]">
+      <q-btn icon="logout" flat label="logga ut" @click="logoutUser" />
+    </q-page-sticky> -->
+    <sticky-user-overlay route="/login" />
   </q-page>
 </template>
 
 <script lang="ts">
 import { mapMutations, mapActions } from 'vuex';
-import { getUser } from 'src/js/auth-utils';
+import { getUser, logout } from 'src/js/auth-utils';
+import StickyUserOverlay from 'src/components/StickyUserOverlay.vue';
 export default {
   name: 'Start',
+  components: { StickyUserOverlay },
   props: {
     isCamera: {
       type: Boolean,
@@ -136,6 +142,10 @@ export default {
     ...mapActions('connectionSettings', {
       saveConnSettingsToStorage: 'saveSettingsToStorage',
     }),
+    async logoutUser () {
+      await logout();
+      this.$router.replace('/login');
+    },
     async getTurnCreds () {
       const response = await getUser('/get-turn-credentials');
       console.log(response);

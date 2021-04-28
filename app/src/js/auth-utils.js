@@ -8,7 +8,7 @@ export function generateAuthHeader (username, password) {
 }
 
 function authHeader () {
-  console.log(store.state.authState.authHeader);
+  // console.log(store.state.authState.authHeader);
   return store.state.authState.authHeader;
 }
 
@@ -36,6 +36,6 @@ export async function postAdmin (path, data) {
   return axios.post(`${authEndpoint}/admin${path}`, data, { headers: { authorization: authHeader() } });
 }
 
-export async function logOut () {
+export async function logout () {
   store.dispatch('authState/logout');
 }

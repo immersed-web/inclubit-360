@@ -42,7 +42,7 @@ export default {
   },
   actions: {
     initFromStorage ({ commit }) {
-      console.log('initFromStorage');
+      console.log('authState: initFromStorage called');
       const newState = localStorage.getItem('authState');
       const parsedState = JSON.parse(newState);
       console.log('state from storage:', parsedState);
@@ -60,10 +60,13 @@ export default {
       commit('setAuthHeader', header);
 
       const response = await getUser('/');
+      // console.log(response);
 
       if (response.status === 200) {
         commit('setCurrentUser', username);
         commit('setIsAdmin', false);
+        const canCreateRooms = response.data.canCreateRooms;
+        commit('setCanCreateRooms', canCreateRooms);
         dispatch('saveToStorage');
       } else {
         commit('clearAuth');

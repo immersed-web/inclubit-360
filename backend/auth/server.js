@@ -231,6 +231,26 @@ app.use('/user', function(req, res, next){
   next();
 },userAuth ,userRouter);
 
+
+
+userRouter.get('/', async function(req, res){
+  console.log('user request');
+  const username = req.auth.user;
+  try{
+    let userData = await readUserFile();
+    if(userData[username]){
+      res.send(userData[username]);
+    }else{
+      res.status(404).send('no userdata found');
+      return;
+    }
+  }catch(err){
+    res.status(404).send(`the resource was not found`)
+  }
+
+  // res.send("this is Gunnars auth API. Hurraay!");
+});
+
 function getTURNCredentials(name, secret){    
   let unixTimeStamp = parseInt(Date.now()/1000) + 2*3600;   // this credential would be valid for the next 24 hours
   let username = [unixTimeStamp, name].join(':');
@@ -245,12 +265,6 @@ function getTURNCredentials(name, secret){
       password: password
   };
 }
-
-userRouter.get('/', function(req, res){
-  console.log('user request');
-  res.send("this is Gunnars auth API. Hurraay!");
-});
-
 userRouter.get('/get-turn-credentials', async function(req, res){
   try{
     const user = req.auth.user;

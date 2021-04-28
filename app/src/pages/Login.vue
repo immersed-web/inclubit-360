@@ -20,11 +20,13 @@
         type="password"
       />
       <q-btn color="primary" type="submit" label="login" />
+      <q-banner rounded class="bg-negative q-mt-md" :class="{invisible: !errorMsg}" dense>
+        {{ errorMsg }}
+      </q-banner>
     </q-form>
-    <pre v-if="errorMsg"> {{ errorMsg }}</pre>
-    <pre>
+    <!-- <pre>
       {{ currentUser }}
-    </pre>
+    </pre> -->
   </q-page>
 </template>
 
@@ -36,6 +38,11 @@ export default {
     loginType: {
       type: String,
       default: '',
+    },
+    target: {
+      type: String,
+      required: false,
+      default: '/',
     },
   },
   data () {
@@ -51,7 +58,16 @@ export default {
     },
     ...mapState('authState', {
       currentUser: 'currentUser',
+      canCreateRooms: 'canCreateRooms',
     }),
+  },
+  watch: {
+    username () {
+      this.errorMsg = '';
+    },
+    password () {
+      this.errorMsg = '';
+    },
   },
   methods: {
     ...mapActions('authState', {
@@ -66,10 +82,17 @@ export default {
           this.$router.replace('/admin');
         } else {
           await this.loginUser({ username: this.username, password: this.password });
-          this.$router.replace('/camera');
+          if (!this.canCreateRooms) {
+            console.log('not allowed to create room. redirecting to root');
+            this.$router.replace('/');
+          } else {
+            console.log('redirecting to target:', this.target);
+            this.$router.replace(this.target);
+          }
         }
       } catch (err) {
-        console.error(err);
+        console.error({ err });
+        this.errorMsg = err.response.data ? err.response.data : err.response.statusText;
       }
     },
   },
@@ -79,10 +102,12 @@ export default {
 <style scoped lang="scss">
 #login-container {
   display: grid;
+  // grid-template-rows: 1fr 3fr;
   place-items: center;
 }
 
 #login-form {
+  align-self: start;
   display: flex;
   flex-direction: column;
   // justify-content: right;
