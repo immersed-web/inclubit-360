@@ -8,6 +8,10 @@ export default {
     socketConnectionState: '',
     serverUrl: '',
     peerConnectionState: 'disconnected',
+    turnCredentials: {
+      username: process.env.TURN_USER,
+      password: process.env.TURN_PASSWORD,
+    },
   },
   getters: {
     isInRoom (state) {
@@ -41,6 +45,9 @@ export default {
     },
     setPeerConnectionState (state, payload) {
       state.peerConnectionState = payload;
+    },
+    setTurnCredentials (state, creds) {
+      state.turnCredentials = creds;
     },
   },
   actions: {

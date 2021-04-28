@@ -165,6 +165,7 @@ export default {
   methods: {
     ...mapMutations('connectionSettings', {
       setRoomNameInStore: 'setRoomName',
+      setTurnCredentials: 'setTurnCredentials',
     }),
     ...mapActions('connectionSettings', {
       saveConnSettingsToStorage: 'saveSettingsToStorage',
@@ -174,8 +175,13 @@ export default {
       this.$router.replace('/login');
     },
     async getTurnCreds () {
-      const response = await getUser('/get-turn-credentials');
-      console.log(response);
+      try {
+        const response = await getUser('/get-turn-credentials');
+        console.log(response);
+        this.setTurnCredentials(response.data);
+      } catch (err) {
+        console.error({ err });
+      }
     },
     addRoomToRecent () {
       const foundRoom = this.recentRooms.find(room => room.name === this.roomName);
@@ -245,15 +251,15 @@ export default {
   flex: 0.7 1 auto;
 }
 
-#main-container div {
-  // flex: 1 1 0;
-  // justify-self: center;
-  // align-self: center;
+// #main-container div {
+//   // flex: 1 1 0;
+//   // justify-self: center;
+//   // align-self: center;
 
-  // * {
-  //   margin: 3rem;
-  // }
-}
+//   // * {
+//   //   margin: 3rem;
+//   // }
+// }
 
 #main-title {
   flex: 0 1 auto;

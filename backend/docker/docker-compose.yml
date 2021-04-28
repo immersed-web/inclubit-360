@@ -33,7 +33,18 @@ services:
   coturn:
     image: instrumentisto/coturn
     network_mode: "host"
-    command: ["-n", "--realm=${BACKEND_SERVER}", "--user=${TURN_USER}:${TURN_PASSWORD}", "--listening-port=${TURN_UDP_PORT}", "--tls-listening-port=${TURN_TLS_PORT}", "--verbose", "--log-file=stdout"]
+    command: [
+      "--verbose",
+      "--lt-cred-mech",
+      "--use-auth-secret", 
+      "--no-cli",
+      "-n",
+      "--listening-port=${TURN_UDP_PORT}", 
+      "--tls-listening-port=${TURN_TLS_PORT}", 
+      "--realm=${BACKEND_SERVER}", 
+      "--static-auth-secret=${SHARED_TURN_SECRET}"
+      # "--user=${TURN_USER}:${TURN_PASSWORD}", 
+      "--log-file=stdout"]
     restart: on-failure:20
   signaling:
     build: ../signaling-server
