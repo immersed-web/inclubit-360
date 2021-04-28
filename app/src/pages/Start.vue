@@ -91,15 +91,36 @@
         </q-tooltip>
       </q-btn>
     </q-page-sticky>
-    <!-- <q-page-sticky position="top-right" :offset="[20, 20]">
-      <q-btn icon="logout" flat label="logga ut" @click="logoutUser" />
-    </q-page-sticky> -->
+    <q-page-sticky v-if="canCreateRooms" position="top-right" :offset="[20, 60]">
+      <template v-if="isCamera">
+        Byt till mottagarsidan:
+        <q-btn
+          color="primary"
+          flat
+          round
+          icon="wifi"
+          size="md"
+          @click="switchView"
+        />
+      </template>
+      <template v-else>
+        Byt till sändningssidan:
+        <q-btn
+          color="primary"
+          flat
+          round
+          icon="o_videocam"
+          size="md"
+          @click="switchView"
+        />
+      </template>
+    </q-page-sticky>
     <sticky-user-overlay route="/login" />
   </q-page>
 </template>
 
 <script lang="ts">
-import { mapMutations, mapActions } from 'vuex';
+import { mapMutations, mapActions, mapState } from 'vuex';
 import { getUser, logout } from 'src/js/auth-utils';
 import StickyUserOverlay from 'src/components/StickyUserOverlay.vue';
 export default {
@@ -116,6 +137,12 @@ export default {
       roomName: '',
       recentRooms: [],
     };
+  },
+  computed: {
+    /** @returns {any} */
+    ...mapState('authState', {
+      canCreateRooms: 'canCreateRooms',
+    }),
   },
   created () {
     try {
@@ -171,6 +198,13 @@ export default {
         this.recentRooms.splice(idx, 1);
       }
       this.saveRecentRooms();
+    },
+    switchView () {
+      if (this.isCamera) {
+        this.$router.replace('/');
+      } else {
+        this.$router.replace('/camera');
+      }
     },
     goToCameraPage () {
       this.addRoomToRecent();

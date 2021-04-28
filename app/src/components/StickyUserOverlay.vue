@@ -1,7 +1,14 @@
 <template>
   <q-page-sticky position="top-right" :offset="[20, 20]">
-    Inloggad som: {{ currentUser }}
-    <q-btn icon="logout" flat label="logga ut" @click="logout" />
+    Inloggad som: <span class="text-primary">{{ currentUser }}</span>
+    <q-btn
+      icon="logout"
+      flat
+      rounded
+      class="q-ml-md"
+      label="logga ut"
+      @click="logout"
+    />
   </q-page-sticky>
 </template>
 
