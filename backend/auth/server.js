@@ -25,7 +25,8 @@ let userRouter = express.Router();
 const PORT = process.env.PORT?process.env.PORT:6060;
 const adminUser = process.env.ADMIN_USER?process.env.ADMIN_USER:'admin';
 const adminPassword = process.env.ADMIN_PASSWORD?process.env.ADMIN_PASSWORD:'gunnarärbäst';
-const TURN_SHARED_SECRET = process.env.TURN_SHARED_SECRET?process.env.TURN_SHARED_SECRET:'rihanna is a good singer';
+const SHARED_TURN_SECRET = process.env.SHARED_TURN_SECRET?process.env.SHARED_TURN_SECRET:'rihanna is a good singer';
+console.log('turn shared secret:', SHARED_TURN_SECRET);
 // const adminUser = {};
 const fileName = './users/users.json';
 
@@ -270,7 +271,7 @@ userRouter.get('/get-turn-credentials', async function(req, res){
     const user = req.auth.user;
     console.log('turn API request from: ', user);
     // let password = req.auth;
-    const creds = getTURNCredentials(user, TURN_SHARED_SECRET);
+    const creds = getTURNCredentials(user, SHARED_TURN_SECRET);
     res.send(creds);
     return;
   }catch(err){
