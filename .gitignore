@@ -3,4 +3,5 @@
 node_modules
 app/src/assets/progressive.mp4
 .env
+.env.dev
 TIME.md
