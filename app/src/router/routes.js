@@ -6,7 +6,7 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Start.vue') },
-      { name: 'Watcher View', meta: { label: 'Watcher View' }, path: 'watch', component: () => import('pages/Viewer.vue') },
+      { name: 'Watcher View', meta: { label: 'Åskådarsidan' }, path: 'watch', component: () => import('pages/Viewer.vue') },
     ],
   },
   {
@@ -16,7 +16,7 @@ const routes = [
     children: [
       { path: 'camera', component: () => import('pages/Start.vue'), props: { isCamera: true } },
       { path: 'kamera', redirect: 'camera' },
-      { name: 'Camera View', meta: { label: 'Camera View' }, path: 'camera/send', component: () => import('pages/Camera.vue') },
+      { name: 'Camera View', meta: { label: 'Sändarsidan' }, path: 'camera/send', component: () => import('pages/Camera.vue') },
     ],
   },
   {

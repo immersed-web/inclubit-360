@@ -159,6 +159,10 @@ export function sendMessage (chatMessage) {
 }
 
 export function sendData (type, data) {
+  if (!channel) {
+    console.error('can\'t send data. No channel object available');
+    return;
+  }
   console.log('sending data', type, data);
   try {
     channel.send(JSON.stringify({ type, data }));

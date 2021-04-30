@@ -1,6 +1,19 @@
 <template>
   <!-- <q-page> -->
   <div id="overlay-container" class="column no-wrap">
+    <RoomDialog v-if="roomState == 'joining'">
+      Försöker gå med i rummet
+      <q-spinner size="xl" />
+    </RoomDialog>
+    <RoomDialog v-else-if="roomState == 'full'" retry-button :message="roomError" @retry="init" />
+    <RoomDialog v-else-if="!roomIsPopulated">
+      Endast du är i det här rummet än så länge 🤷‍♀️
+      <q-spinner size="lg" />
+    </RoomDialog>
+    <RoomDialog v-else-if="!peerIsConnected">
+      Ännu ej ansluten
+      <q-spinner size="lg" />
+    </RoomDialog>
     <div class="flex-grow">
       <!-- <div class="bg-yellow inner-box">
         gul
@@ -113,19 +126,21 @@
 
 <script>
 
-import { mapState, mapGetters, createNamespacedHelpers } from 'vuex';
-const { mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
+import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
+// const { mapMutations, mapActions } = createNamespacedHelpers('deviceSettings');
 import peerUtil from 'js/peer-utils';
 import audioAnalyzer from 'js/audio-utils';
 const micAnalyzer = audioAnalyzer();
 const speakerAnalyzer = audioAnalyzer();
 // import speakerAnalyzer from 'js/audio-utils';
 import AudioIcon from 'src/components/AudioIcon.vue';
+import RoomDialog from 'src/components/RoomDialog.vue';
 
 export default {
   name: 'Camera',
   components: {
     AudioIcon,
+    RoomDialog,
   },
   data () {
     return {
@@ -144,7 +159,10 @@ export default {
   },
   computed: {
     ...mapState({
+      username: state => state.authState.currentUser,
       roomName: state => state.connectionSettings.roomName,
+      roomState: state => state.connectionSettings.roomState,
+      roomError: state => state.connectionSettings.roomError,
       videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
       audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
       audioOutDeviceId: state => state.deviceSettings.chosenAudioOutDeviceId,
@@ -155,7 +173,7 @@ export default {
       availableVideoDevices: 'deviceSettings/availableVideoDevices',
       availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
       availableAudioOutDevices: 'deviceSettings/availableAudioOutDevices',
-      roomPopulated: 'connectionSettings/roomIsPopulated',
+      roomIsPopulated: 'connectionSettings/roomIsPopulated',
       peerIsConnected: 'connectionSettings/peerIsConnected',
     }),
   },
@@ -178,7 +196,19 @@ export default {
     },
   },
   async mounted () {
-    try {
+    await this.init();
+  },
+  async beforeDestroy () {
+    const response = await this.$socket.client.request('leave', this.roomName);
+    this.setRoom(response);
+    micAnalyzer.detachStream();
+    speakerAnalyzer.detachStream();
+    peerUtil.destroyPeer();
+  },
+  methods: {
+    async init () {
+      this.setRoomState({ state: 'joining', error: '' });
+      try {
       // await peerUtil.populateAvailableMediaDevices();
       // const videoConstraints = {
       //   deviceId: this.videoDeviceId,
@@ -188,29 +218,29 @@ export default {
       // };
       // this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
       // this.$refs.mainVideo.srcObject = this.localStream;
-      await this.requestMediaDevices();
+        await this.requestMediaDevices();
 
-      this.videoTrackSettings = this.localStream.getVideoTracks()[0].getSettings();
-    } catch (e) {
-      console.error(e);
-    }
-    console.log('creating peer with streamobject: ', this.localStream);
-    // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onData, this.onClose, this.localStream);
-    // this.$socket.client.emit('peerObjectCreated');
-    await this.createPeer();
-    this.$socket.client.emit('join', this.roomName);
+        this.videoTrackSettings = this.localStream.getVideoTracks()[0].getSettings();
+      } catch (e) {
+        console.error(e);
+      }
+      console.log('creating peer with streamobject: ', this.localStream);
+      // await peerUtil.createPeer(false, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onData, this.onClose, this.localStream);
+      // this.$socket.client.emit('peerObjectCreated');
+      await this.createPeer();
+      const response = await this.$socket.client.request('join', this.roomName, { nick: this.username, sender: true });
+      if (response.error) {
+        console.error(response.error);
+        return;
+      }
+      this.setRoom(response);
 
-    console.log(this.availableVideoDevices);
-  },
-  beforeDestroy () {
-    this.$socket.client.emit('leave', this.roomName);
-    micAnalyzer.detachStream();
-    speakerAnalyzer.detachStream();
-    peerUtil.destroyPeer();
-  },
-  methods: {
-    ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
-    ...mapActions(['saveChosenDevicesToStorage']),
+      console.log(this.availableVideoDevices);
+    },
+    ...mapMutations('deviceSettings', ['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
+    ...mapMutations('connectionSettings', ['setRoomState']),
+    ...mapActions('deviceSetttings', ['saveChosenDevicesToStorage']),
+    ...mapActions('connectionSettings', ['setRoom']),
     async createPeer () {
       await peerUtil.createPeer(false, this.onConnect, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
       this.$socket.client.emit('peerObjectCreated');

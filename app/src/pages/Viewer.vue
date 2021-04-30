@@ -1,5 +1,18 @@
 <template>
   <q-page>
+    <RoomDialog v-if="roomState == 'joining'">
+      Försöker gå med i rummet
+      <q-spinner size="xl" />
+    </RoomDialog>
+    <RoomDialog v-else-if="roomState == 'full'" :message="roomError" retry-button @retry="init" />
+    <RoomDialog v-else-if="!roomReady">
+      Endast du är i det här rummet än så länge 🤷‍♀️
+      <q-spinner size="lg" />
+    </RoomDialog>
+    <RoomDialog v-else-if="!peerIsConnected">
+      Ännu ej ansluten
+      <q-spinner size="lg" />
+    </RoomDialog>
     <div id="overlay-container" class="column no-wrap">
       <DebugInfo :debug-data="{...debugData, remoteIsMuted: !remoteMicEnabled}" />
       <div class="col-grow">
@@ -108,12 +121,14 @@ import audioAnalyzer from 'js/audio-utils';
 const micAnalyzer = audioAnalyzer();
 const speakerAnalyzer = audioAnalyzer();
 import AudioIcon from 'src/components/AudioIcon.vue';
+import RoomDialog from 'src/components/RoomDialog.vue';
 // import sceneUtils from 'js/scene-utils';
 export default {
   name: 'Viewer',
   components: {
     DebugInfo,
     AudioIcon,
+    RoomDialog,
   },
   data () {
     return {
@@ -133,7 +148,11 @@ export default {
   computed: {
     /** @returns {any} */
     ...mapState({
+      username: state => state.authState.currentUser,
       roomName: state => state.connectionSettings.roomName,
+      roomMembers: state => state.connectionSettings.roomMembers,
+      roomState: state => state.connectionSettings.roomState,
+      roomError: state => state.connectionSettings.roomError,
       peerConnectionState: state => state.connectionSettings.peerConnectionState,
       videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
       audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
@@ -163,6 +182,7 @@ export default {
       console.log('roomready changed to:', newValue);
       console.log('connectionState:', this.peerConnectionState);
       if (newValue && this.peerConnectionState !== 'connected') {
+        console.log('should set up peer object now');
         peerUtil.createPeer(true, this.onConnect, (d) => this.$socket.client.emit('signal', d), this.onStream, this.onTrack, this.onData, this.onClose, this.localStream);
       }
     },
@@ -197,26 +217,54 @@ export default {
     //   this.debugData.localVolume = value;
     // });
     // startRMS();
-    await this.requestAudioDevices();
-    this.$socket.client.emit('join', this.roomName);
+
+    // this.$socket.client.emit('join', this.roomName, { nick: this.username, sender: false }, (response) => {
+    //   console.log('response :>> ', response);
+    // });
 
     // sceneUtils.initThreeScene(this.$refs.drawCanvas);
     // console.log('videoSphereSource is:', this.$refs.videoSphereSource);
+    await this.init();
   },
-  beforeDestroy () {
+  async beforeDestroy () {
     console.log('destroying viewer component');
     micAnalyzer.detachStream();
     speakerAnalyzer.detachStream();
-    this.$socket.client.emit('leave', this.roomName);
+    const response = await this.$socket.client.request('leave', this.roomName);
+    this.setNewRoomData(response);
+    console.log('response from leaving room ack :>> ', response);
     peerUtil.destroyPeer();
   },
   methods: {
+    async init () {
+      this.setRoomState({ state: 'joining', error: '' });
+      try {
+        const roomName = this.roomName;
+        console.log(roomName);
+        const username = this.username;
+        console.log(username);
+        const response = await this.$socket.client.request('join', roomName, { nick: username, sender: false });
+        if (response.error) {
+          return;
+        }
+        console.log('response :>> ', response);
+        this.setNewRoomData(response);
+      } catch (err) {
+        console.error(err);
+      }
+
+      await this.requestAudioDevices();
+    },
     ...mapMutations({
       setChosenVideoDeviceId: 'deviceSettings/setChosenVideoDeviceId',
       setChosenAudioInDeviceId: 'deviceSettings/setChosenAudioInDeviceId',
       setChosenAudioOutDeviceId: 'deviceSettings/setChosenAudioOutDeviceId',
+      setRoomState: 'connectionSettings/setRoomSate',
     }),
-    ...mapActions({ saveChosenDevicesToStorage: 'deviceSettings/saveChosenDevicesToStorage' }),
+    ...mapActions({
+      saveChosenDevicesToStorage: 'deviceSettings/saveChosenDevicesToStorage',
+      setNewRoomData: 'connectionSettings/setRoom',
+    }),
     onConnect () {
       this.sendData('micEnabled', this.localMicEnabled);
     },

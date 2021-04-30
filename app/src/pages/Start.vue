@@ -74,7 +74,7 @@
           </q-btn>
         </div>
       </div>
-      <q-btn label="Test TURN cred api" color="pink" text-color="black" @click="getTurnCreds" />
+      <!-- <q-btn label="Test TURN cred api" color="pink" text-color="black" @click="getTurnCreds" /> -->
     </div>
     <q-page-sticky position="bottom-right" :offset="[30, 30]">
       <q-btn
@@ -212,17 +212,27 @@ export default {
         this.$router.replace('/camera');
       }
     },
-    goToCameraPage () {
-      this.addRoomToRecent();
-      this.setRoomNameInStore(this.roomName);
-      this.saveConnSettingsToStorage();
-      this.$router.push('/camera/send');
+    async goToCameraPage () {
+      try {
+        this.addRoomToRecent();
+        this.setRoomNameInStore(this.roomName);
+        await this.getTurnCreds();
+        this.saveConnSettingsToStorage();
+        this.$router.push('/camera/send');
+      } catch (err) {
+        console.error({ err });
+      }
     },
-    goToViewerPage () {
-      this.addRoomToRecent();
-      this.setRoomNameInStore(this.roomName);
-      this.saveConnSettingsToStorage();
-      this.$router.push('/watch');
+    async goToViewerPage () {
+      try {
+        this.addRoomToRecent();
+        this.setRoomNameInStore(this.roomName);
+        await this.getTurnCreds();
+        this.saveConnSettingsToStorage();
+        this.$router.push('/watch');
+      } catch (err) {
+        console.error({ err });
+      }
     },
   },
 };
