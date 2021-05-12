@@ -2,7 +2,7 @@
   "name": "inclubit-360",
   "version": "0.0.1",
   "description": "360 streaming for school environments",
-  "productName": "Quasar App",
+  "productName": "Inclubit 360",
   "cordovaId": "org.cordova.quasar.app",
   "capacitorId": "",
   "author": "Gunnar Oledal <gunnar.oledal@gmail.com>",

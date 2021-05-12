@@ -141,8 +141,8 @@ module.exports = function (/* ctx */) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: 'Quasar App',
-        short_name: 'Quasar App',
+        name: 'Inclubit 360',
+        short_name: 'Inclubit 360',
         description: '360 streaming for school environments',
         display: 'standalone',
         orientation: 'portrait',
