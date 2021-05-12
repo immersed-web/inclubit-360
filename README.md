@@ -52,7 +52,7 @@ The signaling server is a nodejs-application
 The auth endpoint is a node.js server running express.js. The authentication is very rudimentary and uses [basic access authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
 The node server is running in a container. The user list is kept in a json file that is mounted through a docker volume folder. The passwords are stored as is (not hashed, that is), so be sure to never reuse passwords from other services (or passwords that in some other way are considered personal).
 
->**Note**: The auth is only used to protect some routes in the frontend. Because of the nature of SPA-applications it's not possible to 100% restrict access to those routes. SPA applications usually bundle the whole app and sends to the client, so the client have actually already downloaded the relevant pages. The frontend merely tries to check whether the user should be allowed to see it or not. Because this happens client side a bad actor could extract/modify the client-side code to get access to the (already downloaded) restricted routes/pages.
+>**Note**: Regarding navigation the auth is only used to protect some routes in the frontend. Because of the nature of SPA-applications it's not possible to 100% restrict access to those routes. SPA applications usually bundle the whole app and sends to the client, so the client have actually already downloaded the relevant pages. The frontend merely tries to check whether the user should be allowed to see it or not. Because this happens client side a bad actor could in theory extract/modify the client-side code to get access to the (already downloaded) restricted routes/pages. Although this might sound alarming it shouldn't be considered a big concern. What in reality needs protection is the data and not the interface. The most important use of the auth server in this web application is to give the users access to the media relaying server (COTURN).
 
 #### STUN/TURN
 The STUN/TURN server is an instance of the open-source implemenation [COTURN](https://github.com/coturn/coturn). It's responsible for a some of the technical details involved when running a webRTC connection.
@@ -84,8 +84,6 @@ BACKEND_DEFAULT_PORT_NUMBER=443
 BACKEND_SERVER=a.domain.that.you.have.registered.and.owns
 
 ### TURN SERVER CONFIG ###
-TURN_USER=REPLACETHISWITHSOMENICENAME
-TURN_PASSWORD=USEANICESECRET
 TURN_UDP_PORT=3478
 TURN_TLS_PORT=5349
 
@@ -96,11 +94,11 @@ TURN_TLS_PORT=5349
 ### AUTH CONFIG
 ADMIN_USER=adminuser
 ADMIN_PASSWORD=such-secret-wow
+SHARED_TURN_SECRET=SuperSecretTextSharedByAuthServerAndCoturnServer
 ```
 A normal setup would require setting new values for:
 - BACKEND_SERVER
-- TURN_USER
-- TURN_PASSWORD
+- SHARED_TURN_SECRET
 - ADMIN_USER
 - ADMIN_PASSWORD
 
@@ -141,7 +139,7 @@ docker-compose up --build
 
 
 #### Update to new version
-If you want to update to a new version available on github, you need to stop the docker services, pull the latest version from github, run the frontend build script, and start the docker services.
+If you want to update to a new version available on github, you need to stop the docker services, pull the latest version from github, run the frontend build script, and start the docker services. If there has been any canges to how the users are stored, you might need to reset the file **users.json** (open it and clear all it's content)
 Steps:
 - cd into `inclubit-360/backend/docker`
 - run `docker-compose down`
