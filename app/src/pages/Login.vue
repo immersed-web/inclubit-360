@@ -1,6 +1,7 @@
 <template>
   <q-page id="login-container">
-    <h3>{{ isAdminLogin? 'Login as Admin': 'Login' }}</h3>
+    <!-- <h3>{{ isAdminLogin? 'Login as Admin': 'Login' }}</h3> -->
+    <MainTitle :subtitle="isAdminLogin? 'Logga in som administratör': 'Logga in' " />
     <q-form id="login-form" @submit="login">
       <q-input
         v-model="username"
@@ -8,7 +9,7 @@
         outlined
         bordered
         class="q-mb-xl"
-        label="username"
+        label="användarnamn"
       />
       <q-input
         v-model="password"
@@ -16,10 +17,10 @@
         outlined
         bordered
         class="q-mb-xl"
-        label="password"
+        label="lösenord"
         type="password"
       />
-      <q-btn color="primary" type="submit" label="login" />
+      <q-btn no-caps color="primary" type="submit" label="Logga in" />
       <q-banner rounded class="bg-negative q-mt-md" :class="{invisible: !errorMsg}" dense>
         {{ errorMsg }}
       </q-banner>
@@ -31,9 +32,11 @@
 </template>
 
 <script>
+import MainTitle from 'src/components/MainTitle.vue';
 import { mapState, mapActions } from 'vuex';
 export default {
   name: 'Login',
+  components: { MainTitle },
   props: {
     loginType: {
       type: String,
@@ -53,9 +56,11 @@ export default {
     };
   },
   computed: {
+    /** @returns {boolean} */
     isAdminLogin () {
       return this.loginType === 'admin';
     },
+    /** @returns {any} */
     ...mapState('authState', {
       currentUser: 'currentUser',
       canCreateRooms: 'canCreateRooms',

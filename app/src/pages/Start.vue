@@ -1,14 +1,15 @@
 <template>
   <q-page id="main-container" class="row justify-center">
     <div id="main-column" class="full-height column no-wrap justify-center q-py-xl">
-      <div id="main-title" class=" self-end column justify-end">
+      <MainTitle :subtitle="isCamera?'Skapa rum':'Anslut till rum'" />
+      <!-- <div id="main-title" class=" self-end column justify-end">
         <h1>
           INCLUBIT36<span>0</span>
         </h1>
         <h2>
           {{ isCamera?'Skapa rum':'Anslut till rum' }}
         </h2>
-      </div>
+      </div> -->
 
       <div id="ui-container" class="column no-wrap">
         <div class="q-my-md">
@@ -123,9 +124,10 @@
 import { mapMutations, mapActions, mapState } from 'vuex';
 import { getUser, logout } from 'src/js/auth-utils';
 import StickyUserOverlay from 'src/components/StickyUserOverlay.vue';
+import MainTitle from 'components/MainTitle.vue';
 export default {
   name: 'Start',
-  components: { StickyUserOverlay },
+  components: { MainTitle, StickyUserOverlay },
   props: {
     isCamera: {
       type: Boolean,

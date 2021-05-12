@@ -28,6 +28,7 @@
 		"vetur.validation.template": false,
 		"vetur.experimental.templateInterpolationService": true,
 		"vetur.format.enable": false,
+		"editor.tabSize": 2,
 	},
 	"launch": {
 		"version": "0.2.0",
