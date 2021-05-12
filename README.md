@@ -145,6 +145,7 @@ Steps:
 - run `docker-compose down`
 - run `git pull`
 - run the shell script `prepare-spa-build.sh`
+- possibly, reset/change the file **users.json** to reflect new changes (easiest is probably to clear all text in the file, which will remove all users)
 - run `docker-compose up --build`
 
 #### Bash Utility Scripts
