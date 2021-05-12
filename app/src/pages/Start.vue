@@ -50,6 +50,7 @@
         <div class="">
           <q-btn
             v-if="isCamera"
+            :disable="!roomName"
             no-caps
             color="primary"
             text-color="white"
@@ -62,6 +63,7 @@
           </q-btn>
           <q-btn
             v-else
+            :disable="!roomName"
             color="primary"
             text-color="white"
             flat
