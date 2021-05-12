@@ -163,6 +163,7 @@ export default {
       roomName: state => state.connectionSettings.roomName,
       roomState: state => state.connectionSettings.roomState,
       roomError: state => state.connectionSettings.roomError,
+      roomMembers: state => state.connectionSettings.roomMembers,
       videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
       audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
       audioOutDeviceId: state => state.deviceSettings.chosenAudioOutDeviceId,
