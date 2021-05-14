@@ -8,6 +8,7 @@ export default {
     roomError: '',
     roomMembers: [],
     socketConnectionState: '',
+    socketId: undefined,
     // serverUrl: '',
     peerConnectionState: 'disconnected',
     turnCredentials: {
@@ -41,9 +42,11 @@ export default {
   },
   mutations: {
     SOCKET_CONNECT (state) {
+      state.socketId = socket.id;
       state.socketConnectionState = 'connected';
     },
     SOCKET_DISCONNECT (state) {
+      state.socketId = undefined;
       state.socketConnectionState = 'disconnected';
     },
     SOCKET_ROOMFULL (state, payload) {

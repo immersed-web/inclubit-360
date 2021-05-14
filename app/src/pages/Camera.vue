@@ -14,6 +14,7 @@
       Ännu ej ansluten
       <q-spinner size="lg" />
     </RoomDialog>
+    <ParticipantsList class="participant-list" :participants="participants" />
     <div class="flex-grow">
       <!-- <div class="bg-yellow inner-box">
         gul
@@ -135,12 +136,14 @@ const speakerAnalyzer = audioAnalyzer();
 // import speakerAnalyzer from 'js/audio-utils';
 import AudioIcon from 'src/components/AudioIcon.vue';
 import RoomDialog from 'src/components/RoomDialog.vue';
+import ParticipantsList from 'src/components/ParticipantsList.vue';
 
 export default {
   name: 'Camera',
   components: {
     AudioIcon,
     RoomDialog,
+    ParticipantsList,
   },
   data () {
     return {
@@ -164,6 +167,7 @@ export default {
       roomState: state => state.connectionSettings.roomState,
       roomError: state => state.connectionSettings.roomError,
       roomMembers: state => state.connectionSettings.roomMembers,
+      socketId: state => state.connectionSettings.socketId,
       videoDeviceId: state => state.deviceSettings.chosenVideoDeviceId,
       audioInDeviceId: state => state.deviceSettings.chosenAudioInDeviceId,
       audioOutDeviceId: state => state.deviceSettings.chosenAudioOutDeviceId,
@@ -177,6 +181,24 @@ export default {
       roomIsPopulated: 'connectionSettings/roomIsPopulated',
       peerIsConnected: 'connectionSettings/peerIsConnected',
     }),
+    participants () {
+      if (!this.roomMembers) {
+        return [];
+      }
+      const nameList = this.roomMembers.map(member => {
+        const id = member.id;
+        const nick = member.data.nick;
+        const isMe = id === this.socketId;
+        // const name = `${nick}${isMe ? ' (du)' : ''}`;
+        return {
+          name: nick, id, isMe, sender: member.data.sender,
+        };
+      });
+      nameList.push({
+        name: 'klasse mcdonald med dasen och den långa halsen', id: 'asdfasdfasdf', isMe: true, sender: false,
+      });
+      return nameList;
+    },
   },
   sockets: {
     connect (data) {
@@ -357,6 +379,12 @@ export default {
   * {
     pointer-events: auto;
   }
+}
+
+.participant-list {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
 }
 
 .main-video {
