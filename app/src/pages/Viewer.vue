@@ -49,7 +49,7 @@
             <span class="ellipsis">{{ scope.opt.label }}</span>
           </template>
         </q-select>
-        <q-select
+        <!-- <q-select
           class="device-select-box  col-auto q-mx-md"
           dense
           label="Audio out"
@@ -64,7 +64,7 @@
           <template v-slot:selected-item="scope">
             <span class="ellipsis">{{ scope.opt.label }}</span>
           </template>
-        </q-select>
+        </q-select> -->
 
         <!-- <q-btn v-if="devicesChanged" color="primary" label="applicera" @click="mediaDeviceChanged" />
       -->
