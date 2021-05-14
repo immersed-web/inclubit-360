@@ -135,8 +135,12 @@ io.on("connection", function (socket) {
       if(roomHasSender == metaData.sender){
         const type = metaData.sender?'sändare':'åskådare';
         console.log(`socket ${socket.id} couldn't join room ${roomName} since it was already a ${type} in it`);
-        callback({error: `Det finns redan en ${type} i rummet 😮`,});
-        socket.emit('roomFull', `Det finns redan en ${type} i rummet 😮`);
+        let message = `Det finns redan en ${type} i rummet 😮 Kan det vara så att du redan har en flik med samma rum öppnad?`;
+        if(metaData.sender){
+          message += ' Eller är det någon annan som också försöker skicka video användandes samma rumsnamn?'
+        }
+        callback({error: message,});
+        socket.emit('roomFull', message);
         return;
       }
     }
