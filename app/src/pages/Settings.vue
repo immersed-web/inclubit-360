@@ -70,7 +70,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 const { mapGetters, mapMutations, mapState, mapActions } = createNamespacedHelpers('deviceSettings');
-import { populateAvailableMediaDevices } from 'src/js/peer-utils';
+import { getPermissionStatus, populateAvailableMediaDevices, triggerPermissionDialog } from 'src/js/peer-utils';
 import DevicePicker from './settings/DevicePicker.vue';
 export default {
   name: 'Settings',
@@ -115,6 +115,14 @@ export default {
     // console.log(this.availableVideoDevices);
     // console.log(this.availableAudioInDevices);
     // console.log(this.availableAudioOutDevices);
+    const status = await getPermissionStatus();
+    const cameraNeeded = status.cameraStatus.state !== 'granted';
+    const microphoneNeeded = status.microphoneStatus.state !== 'granted';
+
+    if (cameraNeeded || microphoneNeeded) {
+      await triggerPermissionDialog(cameraNeeded, microphoneNeeded);
+      populateAvailableMediaDevices();
+    }
   },
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
