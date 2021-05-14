@@ -194,9 +194,9 @@ export default {
           name: nick, id, isMe, sender: member.data.sender,
         };
       });
-      nameList.push({
-        name: 'klasse mcdonald med dasen och den långa halsen', id: 'asdfasdfasdf', isMe: true, sender: false,
-      });
+      // nameList.push({
+      //   name: 'klasse mcdonald med dasen och den långa halsen', id: 'asdfasdfasdf', isMe: true, sender: false,
+      // });
       return nameList;
     },
   },
