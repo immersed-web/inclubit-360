@@ -122,6 +122,7 @@ const micAnalyzer = audioAnalyzer();
 const speakerAnalyzer = audioAnalyzer();
 import AudioIcon from 'src/components/AudioIcon.vue';
 import RoomDialog from 'src/components/RoomDialog.vue';
+import { populateAvailableMediaDevices } from 'src/js/peer-utils';
 // import sceneUtils from 'js/scene-utils';
 export default {
   name: 'Viewer',
@@ -254,6 +255,7 @@ export default {
       }
 
       await this.requestAudioDevices();
+      populateAvailableMediaDevices();
     },
     ...mapMutations({
       setChosenVideoDeviceId: 'deviceSettings/setChosenVideoDeviceId',

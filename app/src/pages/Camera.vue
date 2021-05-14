@@ -232,16 +232,16 @@ export default {
     async init () {
       this.setRoomState({ state: 'joining', error: '' });
       try {
-      // await peerUtil.populateAvailableMediaDevices();
-      // const videoConstraints = {
-      //   deviceId: this.videoDeviceId,
-      // };
-      // const audioConstraints = {
-      //   deviceId: this.audioInDeviceId,
-      // };
-      // this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
-      // this.$refs.mainVideo.srcObject = this.localStream;
+        // const videoConstraints = {
+        //   deviceId: this.videoDeviceId,
+        // };
+        // const audioConstraints = {
+        //   deviceId: this.audioInDeviceId,
+        // };
+        // this.localStream = await peerUtil.getLocalMediaStream(videoConstraints, audioConstraints);
+        // this.$refs.mainVideo.srcObject = this.localStream;
         await this.requestMediaDevices();
+        await peerUtil.populateAvailableMediaDevices();
 
         this.videoTrackSettings = this.localStream.getVideoTracks()[0].getSettings();
       } catch (e) {
