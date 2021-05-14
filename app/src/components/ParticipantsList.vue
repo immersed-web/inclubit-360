@@ -6,7 +6,7 @@
       </q-item-label>
       <q-separator />
       <q-item v-for="participant in participants" :key="participant.id">
-        <q-item-section avatar>
+        <q-item-section avatar class="col-shrink">
           <q-icon :name="participant.sender?'o_videocam':'o_visibility'" />
         </q-item-section>
         <q-item-section class="name-column">
