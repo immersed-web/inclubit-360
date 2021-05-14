@@ -187,6 +187,19 @@ export function setPeerOutputStream (stream) {
 //   console.log(peerConnection);
 // }
 
+export async function getPermissionStatus () {
+  const cameraStatus = await navigator.permissions.query({ name: 'camera' });
+  const microphoneStatus = await navigator.permissions.query({ name: 'microphone' });
+
+  const status = { cameraStatus, microphoneStatus };
+  console.log('status :>> ', status);
+  return status;
+}
+
+export async function triggerPermissionDialog (video = true, audio = true) {
+  await navigator.mediaDevices.getUserMedia({ video, audio });
+}
+
 export async function populateAvailableMediaDevices () {
   const devices = await navigator.mediaDevices.enumerateDevices();
   store.commit('deviceSettings/setAvailableMediaDevices', devices);
