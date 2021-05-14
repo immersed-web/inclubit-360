@@ -143,7 +143,7 @@ If you want to update to a new version available on github, you need to stop the
 Steps:
 - cd into `inclubit-360/backend/docker`
 - run `docker-compose down`
-- run `git pull`
+- run `git pull`  (if you have made local changes you might have to discard those before being able to pull)
 - run the shell script `prepare-spa-build.sh`
 - possibly, reset/change the file **users.json** to reflect new changes (easiest is probably to clear all text in the file, which will remove all users)
 - run `docker-compose up --build`
