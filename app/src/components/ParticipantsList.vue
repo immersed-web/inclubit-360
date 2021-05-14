@@ -45,14 +45,14 @@ export default {
 #list-container {
   // max-width: 15rem;
 
-  // * {
-  //   overflow: hidden;
-  //   // display: block;
-  //   overflow: hidden;
-  //   text-overflow: ellipsis;
-  //   white-space: nowrap;
-  //   // outline: 1px solid white;
-  // }
+  * {
+    overflow: hidden;
+    // display: block;
+    // overflow: hidden;
+    // text-overflow: ellipsis;
+    // white-space: nowrap;
+    // outline: 1px solid white;
+  }
 
   // p {
   //   margin: 0;
