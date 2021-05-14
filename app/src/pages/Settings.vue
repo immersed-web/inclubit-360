@@ -54,14 +54,15 @@
       </q-card> -->
     </div>
     <q-btn
-      size="xl"
-      label="save"
+      no-caps
+      size="lg"
+      label="Spara"
       color="primary"
       class="q-ma-md"
       :disable="saveConfirmed"
       @click="saveSettings"
     />
-    <q-icon v-if="saveConfirmed" size="xl" name="check" color="positive" />
+    <q-icon v-if="saveConfirmed" size="lg" name="check" color="positive" />
   </q-page>
 </template>
 
