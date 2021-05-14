@@ -29,6 +29,7 @@
 		"vetur.experimental.templateInterpolationService": true,
 		"vetur.format.enable": false,
 		"editor.tabSize": 2,
+		"vetur.completion.tagCasing": "initial",
 	},
 	"launch": {
 		"version": "0.2.0",
