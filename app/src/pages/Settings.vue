@@ -7,20 +7,21 @@
         icon="arrow_back_ios"
         class="q-mr-xl"
         to="/"
-      />Settings
+      />Enhetsinställningar
+      <q-btn icon="refresh" round @click="refreshDevices" />
     </h1>
     <div class="row">
       <device-picker
         icon="videocam"
-        label="Camera"
-        :device-list="availableVideoDevices"
+        label="Kamera"
+        :device-list="!showState?availableVideoDevices:[]"
         :chosen-device-id="chosenVideoDeviceId"
         @devicePicked="setChosenVideoDeviceId"
       />
       <device-picker
         icon="mic"
-        label="Microphone"
-        :device-list="availableAudioInDevices"
+        label="Mikrofon"
+        :device-list="!showState?availableAudioInDevices:[]"
         :chosen-device-id="chosenAudioInDeviceId"
         @devicePicked="setChosenAudioInDeviceId"
       />
@@ -69,7 +70,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 const { mapGetters, mapMutations, mapState, mapActions } = createNamespacedHelpers('deviceSettings');
-// import { populateAvailableMediaDevices } from 'src/js/peer-utils';
+import { populateAvailableMediaDevices } from 'src/js/peer-utils';
 import DevicePicker from './settings/DevicePicker.vue';
 export default {
   name: 'Settings',
@@ -77,6 +78,7 @@ export default {
   data () {
     return {
       saveConfirmed: false,
+      showState: 0,
     };
   },
   computed: {
@@ -117,6 +119,13 @@ export default {
   methods: {
     ...mapMutations(['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapActions(['initializeChosenMediaDevices', 'saveChosenDevicesToStorage']),
+    refreshDevices () {
+      this.showState = 1;
+      populateAvailableMediaDevices();
+      setTimeout(() => {
+        this.showState = 0;
+      }, 1000);
+    },
     saveSettings () {
       this.saveChosenDevicesToStorage();
       this.saveConfirmed = true;

@@ -5,10 +5,10 @@
     class="col q-ma-lg q-pa-md"
   >
     <q-card-section class="row items-center q-gutter-lg">
-      <q-icon size="xl" class="q-my-none" :name="icon" />
-      <h3 class="q-my-none">
+      <q-icon size="md" class="q-my-none" :name="icon" />
+      <h4 class="q-my-none">
         {{ label }}
-      </h3>
+      </h4>
       <q-card v-if="chosenDevice" class="bg-secondary q-my-none q-pa-md">
         {{ chosenDevice.label }}
       </q-card>
