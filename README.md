@@ -178,7 +178,7 @@ The development of version 1.0.0 was a collaboration between the following organ
 
 #### Copyright & License
 This codebase (excluding external dependencies, such as libraries and/or software frameworks) is written by me, Gunnar Oledal.
-External dependencies, such as libraries and/or software frameworks in this repository, holds up to their own respective license
+External dependencies, such as libraries and/or software frameworks in this repository, holds up to their own respective licenses.
 
 ```
 Inclubit 360. Web application for realtime streaming of 360 video to Virtual Reality
