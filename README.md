@@ -197,13 +197,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ```
-
-
-
-
-
-// TODO README:
-* a section about how webrtc works
-* Investigate running docker on [vmware](https://vmware.github.io/vic-product/assets/files/html/1.3/vic_app_dev/deploy_multiple_docker_compose.html)
-* Investigate running on azure
-* Investigate running on windows server
