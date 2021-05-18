@@ -169,20 +169,20 @@ The following ports are required to be opened on the backend server:
 | 5349  | TCP       | Turn server TLS Port |
 | 49152-65535 | UDP | Turn server p2p relaying ports |
 
-#### Credit
+## Credit
 The project to develop and create this software was initiated by Lèv Grunberg.
 The development of version 1.0.0 was a collaboration between the following organisations:
 - Reasearch Institutes of Sweden (RISE)
 - Kungsbacka Kommun
 - Eskilstuna Kommun
 
-#### Copyright & License
+## Copyright & License
 This codebase (excluding external dependencies, such as libraries and/or software frameworks) is written by me, Gunnar Oledal.
 External dependencies, such as libraries and/or software frameworks in this repository, holds up to their own respective licenses.
 
 ```
 Inclubit 360. Web application for realtime streaming of 360 video to Virtual Reality
-Copyright (C) 2021 Gunnar Oledal gunnar.oledal@gmail.com
+Copyright (c) 2021-present Gunnar Oledal gunnar.oledal@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
