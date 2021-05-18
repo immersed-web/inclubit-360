@@ -172,7 +172,7 @@ The following ports are required to be opened on the backend server:
 #### Credit
 The project to develop and create this software was initiated by Lèv Grunberg.
 The development of version 1.0.0 was a collaboration between the following organisations:
-- Reasearch Institutes
+- Reasearch Institutes of Sweden (RISE)
 - Kungsbacka Kommun
 - Eskilstuna Kommun
 
