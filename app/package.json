@@ -18,12 +18,12 @@
     "@quasar/extras": "^1.0.0",
     "@vue/devtools": "^5.3.3",
     "aframe": "^1.0.4",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "camera-controls": "^1.22.1",
     "quasar": "^1.0.0",
     "simple-peer": "^9.7.2",
     "socket.io-client": "^4.0.1",
-    "three": "^0.119.1",
+    "three": "^0.125.0",
     "vue-socket.io-extended": "^4.0.3"
   },
   "devDependencies": {
