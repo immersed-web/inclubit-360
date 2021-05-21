@@ -163,7 +163,12 @@ export function sendData (type, data) {
     console.error('can\'t send data. No channel object available');
     return;
   }
-  console.log('sending data', type, data);
+  console.log(peerConnection);
+  if ('connected' in peerConnection && !peerConnection.connected) {
+    console.error('not connected yet. Cannot send data');
+    return;
+  }
+  console.log('trying to send data', type, data);
   try {
     channel.send(JSON.stringify({ type, data }));
   } catch (err) {
@@ -208,7 +213,11 @@ export async function populateAvailableMediaDevices () {
 
 export async function getLocalMediaStream (videoConstraint, audioConstraint) {
   console.log('supported constraints: ', navigator.mediaDevices.getSupportedConstraints());
-  return await navigator.mediaDevices.getUserMedia({ video: videoConstraint, audio: audioConstraint });
+  const constraints = { video: videoConstraint, audio: audioConstraint };
+  console.log('requesting mediadevices with constraints:', constraints);
+  const gotMedia = await navigator.mediaDevices.getUserMedia(constraints);
+  console.log('gotMedia result:', gotMedia);
+  return gotMedia;
   // try {
   //   // const videoConstraint = this.chosenVideoInputId ? { deviceId: this.chosenVideoInputId } : true;
   //   // const audioConstraint = this.chosenAudioInputId ? { deviceId: this.chosenAudioInputId } : true;

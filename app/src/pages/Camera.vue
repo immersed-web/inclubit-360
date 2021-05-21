@@ -161,6 +161,7 @@ export default {
     };
   },
   computed: {
+    /** @returns {any} */
     ...mapState({
       username: state => state.authState.currentUser,
       roomName: state => state.connectionSettings.roomName,
@@ -174,6 +175,7 @@ export default {
       // availableMediaDevices: state => state.deviceSettings.availableMediaDevices,
       // availableVideoInputDevices: state => state.deviceSettings.availableVideoInputDevices,
     }),
+    /** @returns {any} */
     ...mapGetters({
       availableVideoDevices: 'deviceSettings/availableVideoDevices',
       availableAudioInDevices: 'deviceSettings/availableAudioInDevices',
@@ -181,6 +183,7 @@ export default {
       roomIsPopulated: 'connectionSettings/roomIsPopulated',
       peerIsConnected: 'connectionSettings/peerIsConnected',
     }),
+    /** @returns {object[]} */
     participants () {
       if (!this.roomMembers) {
         return [];
@@ -227,6 +230,12 @@ export default {
     micAnalyzer.detachStream();
     speakerAnalyzer.detachStream();
     peerUtil.destroyPeer();
+    if (this.localStream) {
+      console.log('stopping previous tracks');
+      this.localStream.getTracks().forEach(track => {
+        track.stop();
+      });
+    }
   },
   methods: {
     async init () {
@@ -262,7 +271,7 @@ export default {
     },
     ...mapMutations('deviceSettings', ['setChosenVideoDeviceId', 'setChosenAudioInDeviceId', 'setChosenAudioOutDeviceId']),
     ...mapMutations('connectionSettings', ['setRoomState']),
-    ...mapActions('deviceSetttings', ['saveChosenDevicesToStorage']),
+    ...mapActions('deviceSettings', ['saveChosenDevicesToStorage']),
     ...mapActions('connectionSettings', ['setRoom']),
     async createPeer () {
       await peerUtil.createPeer(false, this.onConnect, (d) => this.$socket.client.emit('signal', d), this.onStream, null, this.onData, this.onClose, this.localStream);
@@ -316,13 +325,22 @@ export default {
     },
     async requestMediaDevices () {
       const videoId = this.videoDeviceId;
-      const videoConstraint = videoId ? { deviceId: videoId } : true;
+      const videoConstraint = videoId ? { deviceId: { exact: videoId } } : true;
       // videoConstraint.frameRate = 15;
       // videoConstraint.width = 3840;
       // videoConstraint.height = 1920;
       const audioId = this.audioInDeviceId;
       const audioConstraint = audioId ? { deviceId: audioId } : true;
+
+      // stope previous tracks if present
+      if (this.localStream) {
+        console.log('stopping previous tracks');
+        this.localStream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
       this.localStream = await peerUtil.getLocalMediaStream(videoConstraint, audioConstraint);
+      console.log('localStream set to:', this.localStream);
 
       await micAnalyzer.attachStream(this.localStream);
       micAnalyzer.attachCallback(value => {
@@ -337,6 +355,7 @@ export default {
       // console.log('settings', videoTrack.getSettings());
 
       this.$refs.mainVideo.srcObject = this.localStream;
+      console.log('ref srcObj after setting it:', this.$refs.mainVideo.srcObject);
     },
     async onMediaDeviceSelected () {
       this.devicesChanged = false;
