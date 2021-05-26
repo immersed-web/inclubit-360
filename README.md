@@ -1,6 +1,6 @@
 # Inclubit 360
 Inclubit 360 is a solution for enabling real-time communication between a 360 video camera and a VR-headset.
-The system is implemented using web technologies. The client side consists of a website and/or a desktop application.
+The system is implemented using web technologies. The client side consists of a website running in a browser.
 
 ## App / Website
 The source code for the client side is implemented using the web framework [Quasar](https://quasar.dev/). Quasar has built in support for deploying the source code as either of:
