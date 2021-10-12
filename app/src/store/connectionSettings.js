@@ -12,8 +12,8 @@ export default {
     // serverUrl: '',
     peerConnectionState: 'disconnected',
     turnCredentials: {
-      username: process.env.TURN_USER,
-      password: process.env.TURN_PASSWORD,
+      username: 'usernameNotLoaded',
+      password: 'passwordNotLoaded',
     },
   },
   getters: {

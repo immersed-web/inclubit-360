@@ -253,14 +253,16 @@ userRouter.get('/', async function(req, res){
 });
 
 function getTURNCredentials(name, secret){    
-  let unixTimeStamp = parseInt(Date.now()/1000) + 2*3600;   // this credential would be valid for the next 24 hours
+  let unixTimeStamp = parseInt(Date.now()/1000) + 12*3600;   // this credential will be valid for the next 2 hours
   let username = [unixTimeStamp, name].join(':');
+  // console.log('generated username:', username);
   let password;
   let hmac = crypto.createHmac('sha1', secret);
   hmac.setEncoding('base64');
   hmac.write(username);
   hmac.end();
   password = hmac.read();
+  // console.log('generated password:', password);
   return {
       username: username,
       password: password
@@ -269,9 +271,10 @@ function getTURNCredentials(name, secret){
 userRouter.get('/get-turn-credentials', async function(req, res){
   try{
     const user = req.auth.user;
-    console.log('turn API request from: ', user);
+    console.log('turn credentials request from: ', user);
     // let password = req.auth;
     const creds = getTURNCredentials(user, SHARED_TURN_SECRET);
+    console.log('generated credentials for user:', creds);
     res.send(creds);
     return;
   }catch(err){
