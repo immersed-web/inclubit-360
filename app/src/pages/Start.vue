@@ -181,7 +181,7 @@ export default {
     async getTurnCreds () {
       try {
         const response = await getUser('/get-turn-credentials');
-        console.log(response);
+        console.log('got turn credentials: ', response.data);
         this.setTurnCredentials(response.data);
       } catch (err) {
         console.error({ err });

@@ -70,6 +70,7 @@ export default {
       state.peerConnectionState = payload;
     },
     setTurnCredentials (state, creds) {
+      console.log('setting turn credentials:', creds);
       state.turnCredentials = creds;
     },
   },
@@ -99,7 +100,7 @@ export default {
       }
     },
     setSettingsFromStorage ({ commit, state }) {
-      console.log('restoring from storage');
+      console.log('restoring connectionSettings from storage');
       const storageObj = localStorage.getItem('connectionSettings');
       if (storageObj) {
         const settings = JSON.parse(storageObj);
