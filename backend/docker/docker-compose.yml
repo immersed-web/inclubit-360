@@ -43,7 +43,7 @@ services:
       "--use-auth-secret", 
       "--no-cli",
       "-n",
-      "--secure-stun",
+      # "--secure-stun",
       "--listening-port=${TURN_UDP_PORT}", 
       "--tls-listening-port=${TURN_TLS_PORT}", 
       "--realm=${BACKEND_SERVER}", 
