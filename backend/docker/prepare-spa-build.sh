@@ -24,8 +24,8 @@ npm --prefix ../../app install
 echo "running npm build"
 npm --prefix ../../app run build
 
-echo "removing previous build"
-rm -r ../caddy/dist/
+# echo "removing previous build"
+# rm -r ../caddy/dist/
 
-echo "copy new build into folder ../caddy/dist/"
-cp -r ../../app/dist/ ../caddy/dist/
+# echo "copy new build into folder ../caddy/dist/"
+# cp -r ../../app/dist/ ../caddy/dist/

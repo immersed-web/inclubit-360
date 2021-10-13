@@ -2,7 +2,8 @@ version: "3"
 
 services:
   caddy:
-    build: ../caddy
+    # build: ../caddy
+    image: caddy:2.2.1
     ports:
       - "80:80"
       - "443:443"
@@ -19,7 +20,8 @@ services:
     volumes:
       - ~/docker-persistence/caddy:/data
       - ../caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ../caddy/dist:/dist
+      # - ../caddy/dist:/dist
+      - ../../app/dist:/dist
     restart: on-failure:20
   auth:
     build: ../auth
@@ -33,13 +35,15 @@ services:
       - ./users:/usr/app/users
     restart: on-failure:20
   coturn:
-    image: instrumentisto/coturn
+    # image: instrumentisto/coturn
+    image: coturn/coturn
     network_mode: "host"
     command: [
       "--verbose",
       "--use-auth-secret", 
       "--no-cli",
       "-n",
+      "--secure-stun",
       "--listening-port=${TURN_UDP_PORT}", 
       "--tls-listening-port=${TURN_TLS_PORT}", 
       "--realm=${BACKEND_SERVER}", 
