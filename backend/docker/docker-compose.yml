@@ -20,6 +20,7 @@ services:
       - ~/docker-persistence/caddy:/data
       - ../caddy/Caddyfile:/etc/caddy/Caddyfile
       - ../caddy/dist:/dist
+    restart: on-failure:20
   auth:
     build: ../auth
     expose:
@@ -30,6 +31,7 @@ services:
       - SHARED_TURN_SECRET
     volumes:
       - ./users:/usr/app/users
+    restart: on-failure:20
   coturn:
     image: instrumentisto/coturn
     network_mode: "host"
@@ -50,6 +52,7 @@ services:
     #   - "3000:3000"
     expose:
       - "3000"
+    restart: on-failure:20
   # web:
   #   environment:
   #     # passing through from env
