@@ -18,7 +18,7 @@
     "@quasar/extras": "^1.0.0",
     "@vue/devtools": "^5.3.3",
     "aframe": "^1.0.4",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "camera-controls": "^1.22.1",
     "quasar": "^1.0.0",
     "simple-peer": "^9.7.2",
