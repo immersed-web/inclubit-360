@@ -20,7 +20,7 @@
     "http": "0.0.1-security",
     "ip": "^1.1.5",
     "lodash": "^4.17.21",
-    "socket.io": "^4.0.1"
+    "socket.io": "^4.5.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
