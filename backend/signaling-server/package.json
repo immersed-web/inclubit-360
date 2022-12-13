@@ -16,7 +16,7 @@
   "license": "ISC",
   "homepage": "",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "http": "0.0.1-security",
     "ip": "^1.1.5",
     "lodash": "^4.17.21",
