@@ -1,3 +1,6 @@
+#THERE'S A NEW VERSION OF INCLUBIT. CHECK IT OUT
+
+
 # Inclubit 360
 Inclubit 360 is a solution for enabling real-time communication between a 360 video camera and a VR-headset.
 The system is implemented using web technologies. The client side consists of a website running in a browser.
