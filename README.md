@@ -1,4 +1,5 @@
-#THERE'S A NEW VERSION OF INCLUBIT. CHECK IT OUT
+# THERE'S A NEWER VERSION OF INCLUBIT.
+CHECK IT OUT HERE: https://github.com/inclubit/inclubit-2
 
 
 # Inclubit 360
